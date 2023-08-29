@@ -55,15 +55,6 @@ export async function setRequestVariables(
     globalOptionsPrivateMap[row.go_key] = row.go_value;
   });
 
-  try {
-    globalOptionsMap.CONTENT_LANGUAGE =
-      String(globalOptionsMap.CONTENT_LANGUAGE).length > 0
-        ? JSON.parse(globalOptionsMap.CONTENT_LANGUAGE)
-        : undefined;
-  } catch (e) {
-    console.log('Error parsing globalOptions.CONTENT_LANGUAGE', e);
-  }
-
   req.globalOptions = globalOptionsMap;
   req.globalOptionsPrivate = globalOptionsPrivateMap;
 

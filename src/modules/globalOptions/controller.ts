@@ -4,6 +4,7 @@ import { setCachedData } from '@/cache';
 import { getGlobalOptions } from '@/modules/globalOptions/service';
 
 export async function getGlobalOptionsController(req: Request, res: Response) {
+  console.log('dasdas');
   const data = await getGlobalOptions().catch(() => {
     return [];
   });

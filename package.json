@@ -24,6 +24,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@godaddy/terminus": "^4.12.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "envalid": "^7.3.1",
@@ -35,7 +36,9 @@
     "ioredis-mock": "^8.8.1",
     "json-stringify-deterministic": "^1.0.10",
     "jsonwebtoken": "^9.0.1",
+    "jwt-decode": "^3.1.2",
     "knex": "^2.5.1",
+    "knex-paginate": "^3.1.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
@@ -49,7 +52,7 @@
     "pino-http-print": "^3.1.0",
     "pino-pretty": "^10.2.0",
     "type-fest": "^4.0.0",
-    "uuid": "^9.0.0",
+    "uuid": "^3.3.2",
     "winston": "^3.10.0"
   },
   "devDependencies": {
