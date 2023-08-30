@@ -46,10 +46,15 @@ export async function addEdtUser(req, res) {
       'users.role_id',
     ])
     .leftJoin('ms_roles', 'ms_roles.role_id', 'users.role_id')
-    .where({
-      user_name,
+    .where(builder => {
+      builder.where({ user_name });
+      builder.orWhere({ email: user_name });
     })
-    .orWhere({ email: user_name });
+    .andWhere(builder => {
+      if (isUpdate) {
+        builder.whereNotIn('user_id', [user_id]);
+      }
+    });
 
   if (checkUserExist.length) {
     return res.status(200).json({
