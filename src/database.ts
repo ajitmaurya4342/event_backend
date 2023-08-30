@@ -12,6 +12,9 @@ function onError(err) {
   logger.error({ connectionError: err });
 }
 
+const { attachPaginate } = require('knex-paginate');
+attachPaginate();
+
 export async function connectToDatabase() {
   if (knex !== null) return knex;
 

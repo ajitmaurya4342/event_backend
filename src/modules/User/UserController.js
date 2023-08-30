@@ -1,5 +1,6 @@
 import { checkValidation } from '@/lib/checkValidation';
 import { dataReturnUpdate } from '@/lib/helper';
+import { pagination } from '@/lib/pagination';
 
 var bcrypt = require('bcryptjs');
 
@@ -94,5 +95,40 @@ export async function addEdtUser(req, res) {
 }
 
 export async function getUserList(req, res) {
-  const { user_info } = req;
+  const reqbody = { ...req.query, ...req.body };
+  const user_id = reqbody.user_id;
+  const limit = req.query.limit ? req.query.limit : 100;
+  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+
+  const UserList = await global
+    .knexConnection('users')
+    .select([
+      'user_name',
+      'first_name',
+      'last_name',
+      'mobile_number',
+      'email',
+      'role_name',
+      'users.user_id',
+      'users.user_is_active',
+    ])
+    .leftJoin('ms_roles', 'ms_roles.role_id', 'users.role_id')
+    .where(builder => {
+      if (user_id) {
+        builder.where('user_id', '=', user_id);
+      }
+      if (req.query.search) {
+        builder.whereRaw(
+          ` concat_ws(' ',first_name,last_name,employee_code,email,mobile_number,user_name) like '%${req.query.search}%'`,
+        );
+      }
+    })
+    .orderBy('user_id', 'desc')
+    .paginate(pagination(limit, currentPage));
+
+  return res.send({
+    message: 'User List',
+    status: true,
+    Records: UserList,
+  });
 }
