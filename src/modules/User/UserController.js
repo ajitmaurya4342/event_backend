@@ -27,6 +27,7 @@ export async function addEdtUser(req, res) {
     'password',
     'user_is_active',
     'role_id',
+    'email',
   ];
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
@@ -84,6 +85,7 @@ export async function addEdtUser(req, res) {
     return res.send({
       status: true,
       message: `User ${isUpdate ? 'Updated' : 'Created'} Successfully`,
+      obj,
     });
 
     if (user_id) {

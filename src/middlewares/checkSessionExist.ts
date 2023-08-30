@@ -27,7 +27,7 @@ export async function checkSessionExist(
         'users.user_id',
         'users.role_id',
       ])
-      .leftJoin('users', 'user_token.user_id', 'users.role_id')
+      .leftJoin('users', 'user_token.user_id', 'users.user_id')
       .leftJoin('ms_roles', 'ms_roles.role_id', 'users.role_id')
       .where({
         multi_token_id: token,
