@@ -33,7 +33,6 @@ export async function up(knex: Knex) {
     table.increments('country_id').primary();
     table.string('country_name');
     table.string('country_code');
-    table.integer('org_id');
     table.enu('country_is_active', ['Y', 'N']).defaultTo('Y');
     table.integer('created_by').nullable();
     table.integer('updated_by').nullable();
@@ -76,6 +75,18 @@ export async function up(knex: Knex) {
     table.increments('sct_id').primary();
     table.string('seat_class_name');
     table.enu('sct_is_active', ['Y', 'N']).defaultTo('Y');
+    table.integer('created_by').nullable();
+    table.integer('updated_by').nullable();
+    table.datetime('created_at').defaultTo(knex.fn.now());
+    table.datetime('updated_at').defaultTo(knex.fn.now());
+  });
+
+  await knex.schema.createTable('ms_languages', table => {
+    table.increments('lang_id').primary();
+    table.string('lang_name');
+    table.string('lang_iso2');
+    table.string('lang_iso3');
+    table.enu('lang_is_active', ['Y', 'N']).defaultTo('Y');
     table.integer('created_by').nullable();
     table.integer('updated_by').nullable();
     table.datetime('created_at').defaultTo(knex.fn.now());
@@ -159,4 +170,5 @@ export async function down(knex: Knex) {
   await knex.schema.dropTable('user_link_cinema');
   await knex.schema.dropTable('user_token');
   await knex.schema.dropTable('ms_seat_class_type');
+  await knex.schema.dropTable('ms_languages');
 }
