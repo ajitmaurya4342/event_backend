@@ -33,6 +33,7 @@ export async function up(knex: Knex) {
     table.increments('country_id').primary();
     table.string('country_name');
     table.string('country_code');
+    table.string('country_mob_code');
     table.enu('country_is_active', ['Y', 'N']).defaultTo('Y');
     table.integer('created_by').nullable();
     table.integer('updated_by').nullable();

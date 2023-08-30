@@ -7,9 +7,20 @@ var bcrypt = require('bcryptjs');
 export async function addEditCountries(req, res) {
   let reqbody = req.body;
   const { user_info } = req;
-  const { country_name, country_code, country_is_active, country_id } = reqbody;
+  const {
+    country_name,
+    country_code,
+    country_mob_code,
+    country_is_active,
+    country_id,
+  } = reqbody;
   const isUpdate = country_id ? true : false;
-  let checkFields = ['country_name', 'country_code', 'country_is_active'];
+  let checkFields = [
+    'country_name',
+    'country_code',
+    'country_mob_code',
+    'country_is_active',
+  ];
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
     return res.send(result);
@@ -17,7 +28,7 @@ export async function addEditCountries(req, res) {
 
   let checkCountryExist = await global
     .knexConnection('ms_countries')
-    .select(['country_name', 'country_code', 'country_is_active'])
+    .select(['country_name', 'country_code', 'country_mob_code', 'country_is_active'])
     .where(builder => {
       builder.where({ country_name });
     })
@@ -37,6 +48,7 @@ export async function addEditCountries(req, res) {
     let obj = {
       country_name: country_name || null,
       country_code: country_code || null,
+      country_mob_code: country_mob_code || null,
       country_is_active: country_is_active || 'Y',
       ...dataReturnUpdate(user_info, isUpdate),
     };
@@ -61,7 +73,13 @@ export async function getCountryList(req, res) {
 
   const CountryList = await global
     .knexConnection('ms_countries')
-    .select(['country_name', 'country_code', 'country_is_active', 'country_id'])
+    .select([
+      'country_name',
+      'country_code',
+      'country_mob_code',
+      'country_is_active',
+      'country_id',
+    ])
     .where(builder => {
       if (country_id) {
         builder.where('country_id', '=', country_id);
