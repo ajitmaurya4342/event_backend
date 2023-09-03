@@ -14,6 +14,8 @@ import {
   getSeatTypeList,
 } from '@/modules/Master/MasterController';
 
+const fileMulter = require('@/modules/Master/FileUploadController');
+
 const router = Router();
 
 export function MasterRoutes() {
@@ -31,5 +33,7 @@ export function MasterRoutes() {
 
   router.post('/add-edit-seattype', checkSessionExist, addEditSeatType);
   router.get('/getseattypelist', checkSessionExist, getSeatTypeList);
+
+  router.route('/uploadimage').post(fileMulter.uploadImageController);
   return router;
 }

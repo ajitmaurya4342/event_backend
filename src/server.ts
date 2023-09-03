@@ -16,6 +16,7 @@ export const server = createServer(app);
 Promise.all([connectToDatabase(), connectToCinematicDatabase(), connectToRedis()])
   .then(async ([db, mainDb, redis]) => {
     global.knexConnection = db;
+    global.__base = __dirname;
     const ops: AppRouterOptions = { db, mainDb, app, redis };
 
     // load middlewares here
