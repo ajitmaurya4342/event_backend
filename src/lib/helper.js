@@ -1,10 +1,22 @@
 import moment from 'moment';
 
-export const currentDateTime = (date = null, format = 'YYYY-MM-DD HH:mm') => {
+var momentTimeZone = require('moment-timezone');
+
+export const currentDateTime = (
+  date = null,
+  format = 'YYYY-MM-DD HH:mm',
+  TIME_ZONE_SET = '',
+) => {
+  const { TIME_ZONE } = global.globalOptions;
   let currentDateTime = moment().format(format);
+  const TIME_ZON_VALUE = TIME_ZONE_SET || TIME_ZONE;
   if (date) {
     currentDateTime = moment(date).format(currentDateTime);
   }
+  if (TIME_ZON_VALUE) {
+    currentDateTime = momentTimeZone().tz(TIME_ZON_VALUE).format('YYYY-MM-DD HH:mm');
+  }
+  console.log(currentDateTime, TIME_ZON_VALUE);
   return currentDateTime;
 };
 
