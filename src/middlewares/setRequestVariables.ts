@@ -55,8 +55,10 @@ export async function setRequestVariables(
     globalOptionsPrivateMap[row.go_key] = row.go_value;
   });
 
-  req.globalOptions = globalOptionsMap;
-  req.globalOptionsPrivate = globalOptionsPrivateMap;
+  // req.globalOptions = globalOptionsMap;
+  // req.globalOptionsPrivate = globalOptionsPrivateMap;
+  global.globalOptions = globalOptionsMap;
+  global.globalOptionsPrivate = globalOptionsPrivate;
 
   return next();
 }
