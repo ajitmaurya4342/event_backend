@@ -4,11 +4,13 @@ import { checkSessionExist } from '@/middlewares/checkSessionExist';
 import {
   addEditCities,
   addEditCountries,
+  addEditCurrency,
   addEditGenre,
   addEditLanguages,
   addEditSeatType,
   getCityList,
   getCountryList,
+  getCurrencyList,
   getGenreList,
   getLanguageList,
   getSeatTypeList,
@@ -33,6 +35,9 @@ export function MasterRoutes() {
 
   router.post('/add-edit-seattype', checkSessionExist, addEditSeatType);
   router.get('/getseattypelist', checkSessionExist, getSeatTypeList);
+
+  router.post('/add-edit-currency', checkSessionExist, addEditCurrency);
+  router.get('/getcurrencylist', checkSessionExist, getCurrencyList);
 
   router.route('/uploadimage').post(fileMulter.uploadImageController);
   return router;

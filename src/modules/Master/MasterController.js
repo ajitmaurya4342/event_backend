@@ -412,7 +412,7 @@ export async function getSeatTypeList(req, res) {
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
 
-  const GenreList = await global
+  const SeatTypeList = await global
     .knexConnection('ms_seat_class_type')
     .select(['seat_class_name', 'sct_id', 'sct_is_active'])
     .where(builder => {
@@ -434,6 +434,88 @@ export async function getSeatTypeList(req, res) {
   return res.send({
     message: 'Seat Type List',
     status: true,
-    Records: GenreList,
+    Records: SeatTypeList,
+  });
+}
+
+export async function addEditCurrency(req, res) {
+  let reqbody = req.body;
+  const { user_info } = req;
+  const { curr_code, curr_is_active, curr_id, curr_name } = reqbody;
+  const isUpdate = curr_id ? true : false;
+  let checkFields = ['curr_code', 'curr_is_active', 'curr_name'];
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let checkCurrencyExist = await global
+    .knexConnection('ms_currencies')
+    .select(['curr_code', 'curr_is_active'])
+    .where(builder => {
+      builder.where({ curr_code });
+    })
+    .andWhere(builder => {
+      if (isUpdate) {
+        builder.whereNotIn('curr_id', [curr_id]);
+      }
+    });
+
+  if (checkCurrencyExist.length) {
+    return res.status(200).json({
+      message: 'Currency Already Exist',
+      status: false,
+      Records: checkCurrencyExist,
+    });
+  } else {
+    let obj = {
+      curr_code: curr_code || null,
+      curr_name: curr_name || null,
+      curr_is_active: curr_is_active || 'Y',
+      ...dataReturnUpdate(user_info, isUpdate),
+    };
+    if (isUpdate) {
+      await global.knexConnection('ms_currencies').update(obj).where({ curr_id });
+    } else {
+      await global.knexConnection('ms_currencies').insert(obj);
+    }
+
+    return res.send({
+      status: true,
+      message: `Currency ${isUpdate ? 'Updated' : 'Created'} Successfully`,
+      obj,
+    });
+  }
+}
+export async function getCurrencyList(req, res) {
+  const reqbody = { ...req.query, ...req.body };
+  const curr_id = reqbody.curr_id || null;
+  const curr_is_active = reqbody.curr_is_active || null;
+  const limit = req.query.limit ? req.query.limit : 100;
+  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+
+  const CurrencyList = await global
+    .knexConnection('ms_currencies')
+    .select(['curr_code', 'curr_name', 'curr_id', 'curr_is_active'])
+    .where(builder => {
+      if (curr_id) {
+        builder.where('curr_id', '=', curr_id);
+      }
+      if (curr_is_active) {
+        builder.where('curr_is_active', '=', curr_is_active);
+      }
+      if (req.query.search) {
+        builder.whereRaw(
+          ` concat_ws(' ',curr_code,curr_name) like '%${req.query.search}%'`,
+        );
+      }
+    })
+    .orderBy('curr_id', 'desc')
+    .paginate(pagination(limit, currentPage));
+
+  return res.send({
+    message: 'Currency List',
+    status: true,
+    Records: CurrencyList,
   });
 }
