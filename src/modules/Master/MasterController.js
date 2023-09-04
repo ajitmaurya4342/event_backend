@@ -68,6 +68,7 @@ export async function addEditCountries(req, res) {
 export async function getCountryList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const country_id = reqbody.country_id || null;
+  const country_is_active = reqbody.country_is_active || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
 
@@ -83,6 +84,9 @@ export async function getCountryList(req, res) {
     .where(builder => {
       if (country_id) {
         builder.where('country_id', '=', country_id);
+      }
+      if (country_is_active) {
+        builder.where('country_is_active', '=', country_is_active);
       }
       if (req.query.search) {
         builder.whereRaw(
@@ -152,6 +156,7 @@ export async function addEditCities(req, res) {
 export async function getCityList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const country_id = reqbody.country_id || null;
+  const city_is_active = reqbody.city_is_active || null;
   const city_id = reqbody.city_id || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
@@ -169,6 +174,9 @@ export async function getCityList(req, res) {
     .where(builder => {
       if (country_id) {
         builder.where('ms_countries.country_id', '=', country_id);
+      }
+      if (city_is_active) {
+        builder.where('city_is_active', '=', city_is_active);
       }
       if (city_id) {
         builder.where('city_id', '=', city_id);
@@ -240,15 +248,19 @@ export async function addEditLanguages(req, res) {
 export async function getLanguageList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const lang_id = reqbody.lang_id || null;
+  const lang_is_active = reqbody.lang_is_active || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
 
-  const CountryList = await global
+  const LanguageList = await global
     .knexConnection('ms_languages')
-    .select(['lang_iso2', 'lang_iso3', 'lang_name', 'lang_id'])
+    .select(['lang_iso2', 'lang_iso3', 'lang_name', 'lang_id', 'lang_is_active'])
     .where(builder => {
       if (lang_id) {
         builder.where('lang_id', '=', lang_id);
+      }
+      if (lang_is_active) {
+        builder.where('lang_is_active', '=', lang_is_active);
       }
       if (req.query.search) {
         builder.whereRaw(
@@ -260,9 +272,9 @@ export async function getLanguageList(req, res) {
     .paginate(pagination(limit, currentPage));
 
   return res.send({
-    message: 'Country List',
+    message: 'Language List',
     status: true,
-    Records: CountryList,
+    Records: LanguageList,
   });
 }
 
@@ -317,15 +329,19 @@ export async function addEditGenre(req, res) {
 export async function getGenreList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const genre_id = reqbody.genre_id || null;
+  const genre_is_active = reqbody.genre_is_active || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
 
   const GenreList = await global
     .knexConnection('ms_genre')
-    .select(['genre_name', 'genre_id'])
+    .select(['genre_name', 'genre_id', 'genre_is_active'])
     .where(builder => {
       if (genre_id) {
         builder.where('genre_id', '=', genre_id);
+      }
+      if (genre_is_active) {
+        builder.where('genre_is_active', '=', genre_is_active);
       }
       if (req.query.search) {
         builder.whereRaw(` concat_ws(' ',genre_name) like '%${req.query.search}%'`);
@@ -392,15 +408,19 @@ export async function addEditSeatType(req, res) {
 export async function getSeatTypeList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const sct_id = reqbody.sct_id || null;
+  const sct_is_active = reqbody.sct_is_active || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
 
   const GenreList = await global
     .knexConnection('ms_seat_class_type')
-    .select(['seat_class_name', 'sct_id'])
+    .select(['seat_class_name', 'sct_id', 'sct_is_active'])
     .where(builder => {
       if (sct_id) {
         builder.where('sct_id', '=', sct_id);
+      }
+      if (sct_is_active) {
+        builder.where('sct_is_active', '=', sct_is_active);
       }
       if (req.query.search) {
         builder.whereRaw(
