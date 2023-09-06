@@ -12,7 +12,7 @@ var storage = multer.diskStorage({
   },
 });
 
-module.exports.uploadSingleFile = multer({
+export const uploadSingleFile = multer({
   storage: storage,
   fileFilter: function (req, file, callback) {
     var ext = path.extname(file.originalname);
@@ -23,7 +23,7 @@ module.exports.uploadSingleFile = multer({
   },
 }).single('file');
 
-module.exports.uploadImage = multer({
+export const uploadImage = multer({
   storage: storage,
   fileFilter: function (req, file, callback) {
     var ext = path.extname(file.originalname);
