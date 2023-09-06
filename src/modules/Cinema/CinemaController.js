@@ -102,6 +102,9 @@ export async function addEditCinema(req, res) {
 export async function getCinemaList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const cinema_id = reqbody.cinema_id || null;
+  const country_id = reqbody.country_id || null;
+  const city_id = reqbody.city_id || null;
+  const org_id = reqbody.org_id || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
 
@@ -123,6 +126,15 @@ export async function getCinemaList(req, res) {
     .where(builder => {
       if (cinema_id) {
         builder.where('cinema_id', '=', cinema_id);
+      }
+      if (city_id) {
+        builder.where('ms_cinemas.city_id', '=', city_id);
+      }
+      if (country_id) {
+        builder.where('ms_cinemas.country_id', '=', country_id);
+      }
+      if (org_id) {
+        builder.where('ms_cinemas.org_id', '=', org_id);
       }
       if (req.query.search) {
         builder.whereRaw(

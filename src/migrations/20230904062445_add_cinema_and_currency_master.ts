@@ -34,19 +34,6 @@ export async function up(knex: Knex): Promise<void> {
     table.datetime('created_at').defaultTo(knex.fn.now());
     table.datetime('updated_at').defaultTo(knex.fn.now());
   });
-
-  //   -Country   == Kuwait
-  // -City   -- Kuwait City
-  // -Cinema Name -- AUKomedy Festival
-  // - Cinema Address --
-  // -Cinema Pin Code
-  // -Cinema Latitude
-  // -Cinema Longitude
-  // - Cinema Email
-  // - Cinema contact person name
-  // - Cinema Contact personn number
-  // - Cinema Active - Yes or No
-  // -Cinema Description
 }
 
 export async function down(knex: Knex): Promise<void> {
