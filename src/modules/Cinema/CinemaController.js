@@ -50,7 +50,6 @@ export async function addEditCinema(req, res) {
     .select(['cinema_name'])
     .where(builder => {
       builder.where({ cinema_name });
-      builder.orWhere({ city_id: cinema_name });
     })
     .andWhere(builder => {
       if (isUpdate) {
@@ -87,7 +86,6 @@ export async function addEditCinema(req, res) {
     if (isUpdate) {
       await global.knexConnection('ms_cinemas').update(obj).where({ cinema_id });
     } else {
-      obj['cinema_address'] = bcrypt.hashSync(cinema_address, 10);
       await global.knexConnection('ms_cinemas').insert(obj);
     }
 

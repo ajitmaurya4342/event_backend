@@ -4,6 +4,7 @@ import { globalOptionsRoutes } from '@/modules/globalOptions/routes';
 import { LoginRoutes } from '@/modules/Login/LoginRoutes';
 
 import { CinemaRoutes } from './modules/Cinema/CinemaRoutes';
+import { EventRoutes } from './modules/Event/EventRoutes';
 import { MasterRoutes } from './modules/Master/MasterRoutes';
 import { UserRoutes } from './modules/User/UserRoutes';
 
@@ -17,6 +18,7 @@ export function getRootRouter(ops: AppRouterOptions) {
   router.use('/admin', UserRoutes());
   router.use('/admin', MasterRoutes());
   router.use('/admin', CinemaRoutes());
+  router.use('/admin', EventRoutes());
 
   return router;
 }
