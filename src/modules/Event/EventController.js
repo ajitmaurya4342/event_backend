@@ -189,13 +189,43 @@ export async function addEditEvent(req, res) {
           const insert_schedule = await global
             .knexConnection('event_schedule')
             .insert(objSc);
+          schedule_insert_id = insert_schedule[0];
+        }
+
+        if (sch_array.sch_seat_type_array && sch_array.sch_seat_type_array.length) {
+          for (let seatT of sch_array.sch_seat_type_array) {
+            await global
+              .knexConnection('event_sch_seat_type')
+              .where({
+                event_sch_id: schedule_insert_id,
+              })
+              .del();
+            let objSeat = {
+              event_id: insert_event_id,
+              event_sch_id: schedule_insert_id || null,
+              sct_id: seatT.sct_id || null,
+              available_seats: seatT.available_seats || null,
+              price_per_seat: seatT.price_per_seat || null,
+            };
+            await global.knexConnection('event_sch_seat_type').insert(objSeat);
+          }
         }
       }
     }
+
+    await global
+      .knexConnection('event_schedule')
+      .where({
+        event_id: insert_event_id,
+        sch_is_active: 'N',
+      })
+      .del();
+
     return res.send({
       status: true,
       message: `Event ${isUpdate ? 'Updated' : 'Created'} Successfully`,
       obj,
+      insert_event_id,
     });
   }
 }
