@@ -34,8 +34,8 @@ export async function addEditEvent(req, res) {
   let checkFields = [
     'event_cinema_id',
     'event_name',
-    'event_end_date',
     'event_start_date',
+    'event_end_date',
     'event_short_description',
     'event_long_description',
     'event_booking_active',
@@ -103,7 +103,7 @@ export async function addEditEvent(req, res) {
 
   if (checkCinemaExist.length) {
     return res.status(200).json({
-      message: 'Cinema Name Already Exist',
+      message: 'Event Name Already Exist',
       status: false,
       Records: checkCinemaExist,
     });
@@ -192,6 +192,15 @@ export async function addEditEvent(req, res) {
           schedule_insert_id = insert_schedule[0];
         }
 
+        if (sch_array.sch_is_active == 'N') {
+          await global
+            .knexConnection('event_sch_seat_type')
+            .where({
+              event_sch_id: schedule_insert_id,
+            })
+            .del();
+        }
+
         if (sch_array.sch_seat_type_array && sch_array.sch_seat_type_array.length) {
           for (let seatT of sch_array.sch_seat_type_array) {
             await global
@@ -213,7 +222,7 @@ export async function addEditEvent(req, res) {
       }
     }
 
-    await global
+    const deleteQuery = await global
       .knexConnection('event_schedule')
       .where({
         event_id: insert_event_id,
