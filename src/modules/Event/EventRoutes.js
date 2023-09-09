@@ -7,7 +7,7 @@ const router = Router();
 
 export function EventRoutes() {
   router.post('/add-edit-event', checkSessionExist, addEditEvent);
-  router.get('/getEventRoutes', checkSessionExist, getEventList);
+  router.get('/getEventList', checkSessionExist, getEventList);
 
   return router;
 }
