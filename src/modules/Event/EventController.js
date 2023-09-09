@@ -91,7 +91,7 @@ export async function addEditEvent(req, res) {
 
   let checkCinemaExist = await global
     .knexConnection('ms_event')
-    .select(['event_image_small'])
+    .select(['event_name'])
     .where(builder => {
       builder.where({ event_name, event_cinema_id });
     })
@@ -293,6 +293,8 @@ export const ExtraDetail = async ({
 
     for (let obj of schedule_array) {
       obj['sch_seat_type_array'] = [];
+      obj['sch_date'] = currentDateTime(obj['sch_date'], 'YYYY-MM-DD');
+
       let seatType = await global.knexConnection('event_sch_seat_type').where({
         event_sch_id: obj.event_sch_id,
       });

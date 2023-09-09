@@ -14,6 +14,7 @@ import {
   getGenreList,
   getLanguageList,
   getSeatTypeList,
+  getTimeZoneList,
 } from '@/modules/Master/MasterController';
 
 const fileMulter = require('@/modules/Master/FileUploadController');
@@ -39,6 +40,7 @@ export function MasterRoutes() {
   router.post('/add-edit-currency', checkSessionExist, addEditCurrency);
   router.get('/getcurrencylist', checkSessionExist, getCurrencyList);
 
+  router.get('/gettimezonelist', checkSessionExist, getTimeZoneList);
   router.route('/uploadimage').post(fileMulter.uploadImageController);
   return router;
 }

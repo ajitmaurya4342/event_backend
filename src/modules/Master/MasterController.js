@@ -519,3 +519,33 @@ export async function getCurrencyList(req, res) {
     Records: CurrencyList,
   });
 }
+
+export async function getTimeZoneList(req, res) {
+  const reqbody = { ...req.query, ...req.body };
+  const tz_id = reqbody.tz_id || null;
+  const curr_is_active = reqbody.curr_is_active || null;
+  const limit = req.query.limit ? req.query.limit : 100;
+  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+
+  const TimeZoneList = await global
+    .knexConnection('ms_time_zones')
+    .select(['tz_name', 'tz_id'])
+    .where(builder => {
+      if (tz_id) {
+        builder.where('tz_id', '=', tz_id);
+      }
+      if (req.query.search) {
+        builder.whereRaw(
+          ` concat_ws(' ',tz_name,curr_name) like '%${req.query.search}%'`,
+        );
+      }
+    })
+    .orderBy('tz_id', 'desc')
+    .paginate(pagination(limit, currentPage));
+
+  return res.send({
+    message: 'Time Zone List',
+    status: true,
+    Records: TimeZoneList,
+  });
+}
