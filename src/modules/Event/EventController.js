@@ -1,7 +1,7 @@
 import moment from 'moment';
 
 import { checkValidation } from '@/lib/checkValidation';
-import { dataReturnUpdate } from '@/lib/helper';
+import { currentDateTime, dataReturnUpdate } from '@/lib/helper';
 import { pagination } from '@/lib/pagination';
 
 var bcrypt = require('bcryptjs');
@@ -239,4 +239,143 @@ export async function addEditEvent(req, res) {
   }
 }
 
-export async function getEventList(req, res) {}
+export const ExtraDetail = async ({
+  isLanguageRequired = true,
+  isGenreRequired = true,
+  isSchduleArrayRequired = true,
+  event_id,
+  isDashboard = true,
+}) => {
+  let event_genre_ids = [];
+  let event_language_ids = [];
+  let event_sch_array = [];
+  if (!event_id) {
+    return {
+      event_genre_ids,
+      event_language_ids,
+      event_sch_array,
+    };
+  }
+
+  if (isLanguageRequired) {
+    let languageArray = await global
+      .knexConnection('event_language')
+      .select('lang_id')
+      .where({
+        event_id,
+      });
+
+    event_language_ids = languageArray.reduce((acc, { lang_id }) => {
+      acc.push(lang_id);
+      return acc;
+    }, []);
+  }
+
+  if (isGenreRequired) {
+    let genreArray = await global
+      .knexConnection('event_genre')
+      .select('genre_id')
+      .where({
+        event_id,
+      });
+
+    event_genre_ids = genreArray.reduce((acc, { genre_id }) => {
+      acc.push(genre_id);
+      return acc;
+    }, []);
+  }
+
+  if (isSchduleArrayRequired) {
+    let schedule_array = await global.knexConnection('event_schedule').where({
+      event_id,
+      sch_is_active: 'Y',
+    });
+
+    for (let obj of schedule_array) {
+      obj['sch_seat_type_array'] = [];
+      let seatType = await global.knexConnection('event_sch_seat_type').where({
+        event_sch_id: obj.event_sch_id,
+      });
+      obj['sch_seat_type_array'] = [...seatType];
+      event_sch_array.push(obj);
+    }
+  }
+  return {
+    event_genre_ids,
+    event_language_ids,
+    event_sch_array,
+  };
+};
+
+export async function getEventList(req, res) {
+  const reqbody = { ...req.query, ...req.body };
+  const cinema_id = reqbody.cinema_id || null;
+  const country_id = reqbody.country_id || null;
+  const city_id = reqbody.city_id || null;
+  const event_id = reqbody.event_id || null;
+  const org_id = reqbody.org_id || null;
+  const limit = req.query.limit ? req.query.limit : 100;
+  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+
+  const EventList = await global
+    .knexConnection('ms_event')
+    .select([
+      'ms_event.*',
+      'ms_cities.city_name',
+      'ms_countries.country_name',
+      'ms_currencies.curr_code',
+      'ms_time_zones.tz_name',
+      'organizations.org_name',
+    ])
+    .leftJoin('ms_cinemas', 'ms_cinemas.cinema_id', 'ms_event.event_cinema_id')
+    .leftJoin('ms_cities', 'ms_cities.city_id', 'ms_cinemas.city_id')
+    .leftJoin('ms_countries', 'ms_countries.country_id', 'ms_cinemas.country_id')
+    .leftJoin('ms_currencies', 'ms_currencies.curr_id', 'ms_cinemas.currency_id')
+    .leftJoin('ms_time_zones', 'ms_time_zones.tz_id', 'ms_cinemas.timezone_id')
+    .leftJoin('organizations', 'organizations.org_id', 'ms_cinemas.org_id')
+    .where(builder => {
+      if (cinema_id) {
+        builder.where('event_cinema_id', '=', cinema_id);
+      }
+      if (city_id) {
+        builder.where('ms_cinemas.city_id', '=', city_id);
+      }
+      if (country_id) {
+        builder.where('ms_cinemas.country_id', '=', country_id);
+      }
+      if (org_id) {
+        builder.where('ms_cinemas.org_id', '=', org_id);
+      }
+      if (event_id) {
+        builder.where('ms_event.event_id', '=', event_id);
+      }
+      if (req.query.search) {
+        builder.whereRaw(
+          ` concat_ws(' ',cinema_name,cinema_email) like '%${req.query.search}%'`,
+        );
+      }
+    })
+    .orderBy('event_id', 'desc')
+    .paginate(pagination(limit, currentPage));
+  let newArray = [];
+  if (EventList && EventList.data) {
+    for (let obj of EventList.data) {
+      obj['event_end_date'] = currentDateTime(obj['event_end_date'], 'YYYY-MM-DD');
+      obj['event_start_date'] = currentDateTime(obj['event_start_date'], 'YYYY-MM-DD');
+
+      let extraData = await ExtraDetail({
+        event_id,
+      });
+      newArray.push({
+        ...obj,
+        ...extraData,
+      });
+    }
+  }
+
+  return res.send({
+    message: 'Event List',
+    status: true,
+    Records: newArray,
+  });
+}

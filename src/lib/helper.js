@@ -10,11 +10,12 @@ export const currentDateTime = (
   const { TIME_ZONE } = global.globalOptions;
   let currentDateTime = moment().format(format);
   const TIME_ZON_VALUE = TIME_ZONE_SET || TIME_ZONE;
-  if (date) {
-    currentDateTime = moment(date).format(currentDateTime);
-  }
+
   if (TIME_ZON_VALUE) {
-    currentDateTime = momentTimeZone().tz(TIME_ZON_VALUE).format('YYYY-MM-DD HH:mm');
+    currentDateTime = momentTimeZone().tz(TIME_ZON_VALUE).format(format);
+  }
+  if (date) {
+    currentDateTime = moment(date).format(format);
   }
   console.log(currentDateTime, TIME_ZON_VALUE);
   return currentDateTime;
