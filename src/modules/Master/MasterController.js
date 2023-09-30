@@ -520,6 +520,71 @@ export async function getCurrencyList(req, res) {
   });
 }
 
+export async function addEditBanner(req, res) {
+  let reqbody = req.body;
+  const { user_info } = req;
+  const { bannerArray } = reqbody;
+  let checkFields = ['bannerArray'];
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let arrayBanner = [];
+
+  for (let objBanner of bannerArray) {
+    let checkFields2 = ['event_id', 'order'];
+    let result2 = await checkValidation(checkFields2, objBanner);
+    if (!result2.status) {
+      return res.send(result2);
+    }
+    arrayBanner.push({
+      event_id: objBanner.event_id,
+      order: objBanner.order,
+    });
+  }
+
+  let delete2 = await global.knexConnection('ms_banner').del();
+  await global.knexConnection('ms_banner').insert(arrayBanner);
+  return res.send({
+    status: true,
+    message: `Banner Updated Successfully`,
+    arrayBanner,
+  });
+}
+
+export async function getBannerList(req, res) {
+  const reqbody = { ...req.query, ...req.body };
+  const b_id = reqbody.b_id || null;
+  const event_id = reqbody.event_id || null;
+  const limit = req.query.limit ? req.query.limit : 100;
+  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+
+  const BannerList = await global
+    .knexConnection('ms_banner')
+    .leftJoin('ms_event', 'ms_event.event_id', 'ms_banner.event_id')
+    .select(['ms_banner.*', 'event_name'])
+    .where(builder => {
+      if (b_id) {
+        builder.where('b_id', '=', b_id);
+      }
+      if (event_id) {
+        builder.where('event_id', '=', event_id);
+      }
+      if (req.query.search) {
+        builder.whereRaw(` concat_ws(' ',event_name) like '%${req.query.search}%'`);
+      }
+    })
+    .orderBy('order', 'asc')
+    .paginate(pagination(limit, currentPage));
+
+  return res.send({
+    message: 'Banner List',
+    status: true,
+    Records: BannerList,
+  });
+}
+
 export async function getTimeZoneList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const tz_id = reqbody.tz_id || null;

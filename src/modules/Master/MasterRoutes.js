@@ -2,12 +2,14 @@ import { Router } from 'express';
 
 import { checkSessionExist } from '@/middlewares/checkSessionExist';
 import {
+  addEditBanner,
   addEditCities,
   addEditCountries,
   addEditCurrency,
   addEditGenre,
   addEditLanguages,
   addEditSeatType,
+  getBannerList,
   getCityList,
   getCountryList,
   getCurrencyList,
@@ -39,6 +41,9 @@ export function MasterRoutes() {
 
   router.post('/add-edit-currency', checkSessionExist, addEditCurrency);
   router.get('/getcurrencylist', checkSessionExist, getCurrencyList);
+
+  router.post('/add-edit-banner', checkSessionExist, addEditBanner);
+  router.get('/getbannerlist', checkSessionExist, getBannerList);
 
   router.get('/gettimezonelist', checkSessionExist, getTimeZoneList);
   router.route('/uploadimage').post(fileMulter.uploadImageController);
