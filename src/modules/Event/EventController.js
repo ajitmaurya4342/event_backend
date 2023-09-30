@@ -29,6 +29,7 @@ export async function addEditEvent(req, res) {
     event_sch_array,
     event_genre_ids,
     event_language_ids,
+    sl_id,
   } = reqbody;
   const isUpdate = event_id ? true : false;
   let checkFields = [
@@ -125,6 +126,7 @@ export async function addEditEvent(req, res) {
       event_booking_active: event_booking_active || 'Y',
       event_is_private: event_is_private || 'N',
       event_is_active: event_is_active || 'Y',
+      sl_id: sl_id || null,
       ...dataReturnUpdate(user_info, isUpdate),
     };
     let insert_event_id = null;
