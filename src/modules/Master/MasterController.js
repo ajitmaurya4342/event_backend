@@ -585,6 +585,93 @@ export async function getBannerList(req, res) {
   });
 }
 
+export async function addEditSeatLayout(req, res) {
+  let reqbody = req.body;
+  const { user_info } = req;
+  const { seat_layout_name, seat_layout_data, sl_id, seat_count } = reqbody;
+  const isUpdate = sl_id ? true : false;
+  let checkFields = ['seat_layout_name', 'seat_layout_data'];
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let checkCurrencyExist = await global
+    .knexConnection('ms_seat_layout')
+    .select(['seat_layout_name'])
+    .where(builder => {
+      builder.where({ seat_layout_name });
+    })
+    .andWhere(builder => {
+      if (isUpdate) {
+        builder.whereNotIn('sl_id', [sl_id]);
+      }
+    });
+
+  if (checkCurrencyExist.length) {
+    return res.status(200).json({
+      message: 'Seat Layout Name Already Exist',
+      status: false,
+      Records: checkCurrencyExist,
+    });
+  } else {
+    let obj = {
+      seat_layout_name: seat_layout_name || null,
+      seat_layout_data: seat_layout_data ? JSON.stringify(seat_layout_data) : null,
+      seat_count: seat_count || 0,
+      // ...dataReturnUpdate(user_info, isUpdate),
+    };
+    if (isUpdate) {
+      await global.knexConnection('ms_seat_layout').update(obj).where({ sl_id });
+    } else {
+      await global.knexConnection('ms_seat_layout').insert(obj);
+    }
+
+    return res.send({
+      status: true,
+      message: `Seat Layout ${isUpdate ? 'Updated' : 'Created'} Successfully`,
+    });
+  }
+}
+export async function getSeatLayoutList(req, res) {
+  const reqbody = { ...req.query, ...req.body };
+  const sl_id = reqbody.sl_id || null;
+  const curr_is_active = reqbody.curr_is_active || null;
+  const limit = req.query.limit ? req.query.limit : 100;
+  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+  let seat_layout_select = ['sl_id', 'seat_layout_name', 'seat_count'];
+  if (sl_id) {
+    seat_layout_select.push('seat_layout_data');
+  }
+  const SeatLayoutList = await global
+    .knexConnection('ms_seat_layout')
+    .select(seat_layout_select)
+    .where(builder => {
+      if (sl_id) {
+        builder.where('sl_id', '=', sl_id);
+      }
+      if (req.query.search) {
+        builder.whereRaw(
+          ` concat_ws(' ',seat_layout_name) like '%${req.query.search}%'`,
+        );
+      }
+    })
+    .orderBy('sl_id', 'desc')
+    .paginate(pagination(limit, currentPage));
+
+  if (SeatLayoutList && SeatLayoutList.data && sl_id) {
+    SeatLayoutList.data.map(z => {
+      z['seat_layout_data'] = JSON.parse(z.seat_layout_data);
+    });
+  }
+
+  return res.send({
+    message: 'Seat Layout List',
+    status: true,
+    Records: SeatLayoutList,
+  });
+}
+
 export async function getTimeZoneList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const tz_id = reqbody.tz_id || null;

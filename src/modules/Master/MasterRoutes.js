@@ -8,6 +8,7 @@ import {
   addEditCurrency,
   addEditGenre,
   addEditLanguages,
+  addEditSeatLayout,
   addEditSeatType,
   getBannerList,
   getCityList,
@@ -15,6 +16,7 @@ import {
   getCurrencyList,
   getGenreList,
   getLanguageList,
+  getSeatLayoutList,
   getSeatTypeList,
   getTimeZoneList,
 } from '@/modules/Master/MasterController';
@@ -44,6 +46,9 @@ export function MasterRoutes() {
 
   router.post('/add-edit-banner', checkSessionExist, addEditBanner);
   router.get('/getbannerlist', checkSessionExist, getBannerList);
+
+  router.post('/add-edit-seatlayout', checkSessionExist, addEditSeatLayout);
+  router.get('/getSeatLayoutList', checkSessionExist, getSeatLayoutList);
 
   router.get('/gettimezonelist', checkSessionExist, getTimeZoneList);
   router.route('/uploadimage').post(fileMulter.uploadImageController);
