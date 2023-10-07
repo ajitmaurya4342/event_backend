@@ -47,7 +47,7 @@ export function MasterRoutes() {
   router.post('/add-edit-banner', checkSessionExist, addEditBanner);
   router.get('/getbannerlist', checkSessionExist, getBannerList);
 
-  router.post('/add-edit-seatlayout', checkSessionExist, addEditSeatLayout);
+  router.post('/add-edit-seatlayout', addEditSeatLayout);
   router.get('/getSeatLayoutList', checkSessionExist, getSeatLayoutList);
 
   router.get('/gettimezonelist', checkSessionExist, getTimeZoneList);
