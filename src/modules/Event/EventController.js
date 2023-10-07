@@ -193,7 +193,7 @@ export async function addEditEvent(req, res) {
             .insert(objSc);
           schedule_insert_id = insert_schedule[0];
         }
-
+        //
         if (sch_array.sch_is_active == 'N') {
           await global
             .knexConnection('event_sch_seat_type')
