@@ -29,7 +29,7 @@ Promise.all([connectToDatabase(), connectToCinematicDatabase(), connectToRedis()
     app.use(notFound);
     app.use(errorHandler);
 
-    setupGracefulShutdown(server);
+    // setupGracefulShutdown(server);
 
     server.listen(port, () => {
       logger.info(
