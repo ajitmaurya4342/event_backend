@@ -7,6 +7,7 @@ import { CinemaRoutes } from './modules/Cinema/CinemaRoutes';
 import { EventRoutes } from './modules/Event/EventRoutes';
 import { MasterRoutes } from './modules/Master/MasterRoutes';
 import { UserRoutes } from './modules/User/UserRoutes';
+import { WebsiteRoutes } from './modules/Website/WebsiteRoutes';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ export function getRootRouter(ops: AppRouterOptions) {
   router.use('/admin', MasterRoutes());
   router.use('/admin', CinemaRoutes());
   router.use('/admin', EventRoutes());
+  router.use('/api', WebsiteRoutes());
 
   return router;
 }

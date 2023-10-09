@@ -330,6 +330,7 @@ export async function getEventList(req, res) {
       'ms_currencies.curr_code',
       'ms_time_zones.tz_name',
       'organizations.org_name',
+      'ms_cinemas.country_id',
     ])
     .leftJoin('ms_cinemas', 'ms_cinemas.cinema_id', 'ms_event.event_cinema_id')
     .leftJoin('ms_cities', 'ms_cities.city_id', 'ms_cinemas.city_id')
@@ -383,3 +384,5 @@ export async function getEventList(req, res) {
     Records: newArray,
   });
 }
+
+export async function getActiveEventList(req, res) {}

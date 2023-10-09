@@ -68,9 +68,13 @@ export async function addEditCountries(req, res) {
 export async function getCountryList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const country_id = reqbody.country_id || null;
-  const country_is_active = reqbody.country_is_active || null;
+  let country_is_active = reqbody.country_is_active || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+  const isWebsiteUser = req['is_website_user'] || false;
+  if (isWebsiteUser) {
+    country_is_active = 'Y';
+  }
 
   const CountryList = await global
     .knexConnection('ms_countries')
@@ -79,6 +83,7 @@ export async function getCountryList(req, res) {
       'country_code',
       'country_mob_code',
       'country_is_active',
+      'country_flag_upload',
       'country_id',
     ])
     .where(builder => {
@@ -248,9 +253,13 @@ export async function addEditLanguages(req, res) {
 export async function getLanguageList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const lang_id = reqbody.lang_id || null;
-  const lang_is_active = reqbody.lang_is_active || null;
+  let lang_is_active = reqbody.lang_is_active || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+  const isWebsiteUser = req['is_website_user'] || false;
+  if (isWebsiteUser) {
+    lang_is_active = 'Y';
+  }
 
   const LanguageList = await global
     .knexConnection('ms_languages')
@@ -523,8 +532,8 @@ export async function getCurrencyList(req, res) {
 export async function addEditBanner(req, res) {
   let reqbody = req.body;
   const { user_info } = req;
-  const { bannerArray } = reqbody;
-  let checkFields = ['bannerArray'];
+  const { bannerArray, country_id } = reqbody;
+  let checkFields = ['bannerArray', 'country_id'];
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
     return res.send(result);
@@ -541,10 +550,16 @@ export async function addEditBanner(req, res) {
     arrayBanner.push({
       event_id: objBanner.event_id,
       order: objBanner.order,
+      country_id,
     });
   }
 
-  let delete2 = await global.knexConnection('ms_banner').del();
+  let delete2 = await global
+    .knexConnection('ms_banner')
+    .where({
+      country_id,
+    })
+    .del();
   await global.knexConnection('ms_banner').insert(arrayBanner);
   return res.send({
     status: true,
@@ -563,7 +578,13 @@ export async function getBannerList(req, res) {
   const BannerList = await global
     .knexConnection('ms_banner')
     .leftJoin('ms_event', 'ms_event.event_id', 'ms_banner.event_id')
-    .select(['ms_banner.*', 'event_name'])
+    .select([
+      'ms_banner.*',
+      'event_name',
+      'event_short_description',
+      'event_image_medium',
+      'event_image_large',
+    ])
     .where(builder => {
       if (b_id) {
         builder.where('b_id', '=', b_id);
