@@ -572,6 +572,7 @@ export async function getBannerList(req, res) {
   const reqbody = { ...req.query, ...req.body };
   const b_id = reqbody.b_id || null;
   const event_id = reqbody.event_id || null;
+  const country_id = reqbody.country_id || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
 
@@ -591,6 +592,9 @@ export async function getBannerList(req, res) {
       }
       if (event_id) {
         builder.where('event_id', '=', event_id);
+      }
+      if (country_id) {
+        builder.where('country_id', '=', country_id);
       }
       if (req.query.search) {
         builder.whereRaw(` concat_ws(' ',event_name) like '%${req.query.search}%'`);

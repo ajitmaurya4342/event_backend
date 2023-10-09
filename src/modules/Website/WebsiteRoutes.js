@@ -17,7 +17,7 @@ export function WebsiteRoutes() {
   router.get('/getCountryList', checkWebsiteSessionExist, getCountryList);
   router.get('/getBannerList', checkWebsiteSessionExist, getBannerList);
   router.get('/getLanguageList', checkWebsiteSessionExist, getLanguageList);
-  router.get('/get-event-list', checkWebsiteSessionExist, getActiveEventList);
+  router.get('/getEventList', checkWebsiteSessionExist, getActiveEventList);
 
   return router;
 }

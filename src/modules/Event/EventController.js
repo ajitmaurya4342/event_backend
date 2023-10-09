@@ -385,4 +385,72 @@ export async function getEventList(req, res) {
   });
 }
 
-export async function getActiveEventList(req, res) {}
+const getActiveListData = async reqbody => {
+  const cinema_id = reqbody.cinema_id || null;
+  const country_id = reqbody.country_id || null;
+  const city_id = reqbody.city_id || null;
+  const event_id = reqbody.event_id || null;
+  const org_id = reqbody.org_id || null;
+  const limit = reqbody.limit ? reqbody.limit : 100;
+  const currentPage = reqbody.currentPage ? reqbody.currentPage : 1;
+  const EventListData = await global
+    .knexConnection('event_schedule')
+    .select([
+      'ms_event.event_image_small',
+      'event_image_medium',
+      'event_image_large',
+      'event_name',
+      'event_short_description',
+      'event_schedule.event_id',
+      'event_start_date',
+      'event_end_date',
+    ])
+    .leftJoin('ms_event', 'ms_event.event_id', 'ms_event.event_cinema_id')
+    .leftJoin('ms_cinemas', 'ms_cinemas.cinema_id', 'ms_event.event_cinema_id')
+    .leftJoin('ms_cities', 'ms_cities.city_id', 'ms_cinemas.city_id')
+    .leftJoin('ms_countries', 'ms_countries.country_id', 'ms_cinemas.country_id')
+    .leftJoin('ms_currencies', 'ms_currencies.curr_id', 'ms_cinemas.currency_id')
+    .leftJoin('ms_time_zones', 'ms_time_zones.tz_id', 'ms_cinemas.timezone_id')
+    .leftJoin('organizations', 'organizations.org_id', 'ms_cinemas.org_id')
+    .where(builder => {
+      if (cinema_id) {
+        builder.where('event_cinema_id', '=', cinema_id);
+      }
+      if (city_id) {
+        builder.where('ms_cinemas.city_id', '=', city_id);
+      }
+      if (country_id) {
+        builder.where('ms_cinemas.country_id', '=', country_id);
+      }
+      if (org_id) {
+        builder.where('ms_cinemas.org_id', '=', org_id);
+      }
+      if (event_id) {
+        builder.where('ms_event.event_id', '=', event_id);
+      }
+      if (reqbody.search) {
+        builder.whereRaw(
+          ` concat_ws(' ',cinema_name,cinema_email) like '%${reqbody.search}%'`,
+        );
+      }
+    })
+    .orderBy('sch_date', 'desc')
+    .groupBy('event_id')
+    .paginate(pagination(limit, currentPage));
+
+  let newRecords = [...EventListData.data];
+  newRecords.map(z => {
+    z['event_end_date'] = currentDateTime(z['event_end_date'], 'YYYY-MM-DD');
+    z['event_start_date'] = currentDateTime(z['event_start_date'], 'YYYY-MM-DD');
+  });
+  return newRecords;
+};
+
+export async function getActiveEventList(req, res) {
+  const reqbody = { ...req.query, ...req.body };
+  const data = await getActiveListData(reqbody);
+  return res.send({
+    status: true,
+    data,
+  });
+}
