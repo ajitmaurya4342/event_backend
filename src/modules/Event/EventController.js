@@ -393,6 +393,7 @@ const getActiveListData = async reqbody => {
   const org_id = reqbody.org_id || null;
   const limit = reqbody.limit ? reqbody.limit : 100;
   const currentPage = reqbody.currentPage ? reqbody.currentPage : 1;
+  let currentDateTimeNew = currentDateTime(null, 'YYYY-MM-DD HH:mm');
   const EventListData = await global
     .knexConnection('event_schedule')
     .select([
@@ -434,6 +435,11 @@ const getActiveListData = async reqbody => {
         );
       }
     })
+    .where({
+      event_is_active: 'Y',
+      sch_is_active: 'Y',
+    })
+    .whereRaw(`concat(sch_date,' ',sch_time)>='${currentDateTimeNew}'`)
     .orderBy('sch_date', 'desc')
     .groupBy('event_id')
     .paginate(pagination(limit, currentPage));
