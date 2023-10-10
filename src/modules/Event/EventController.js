@@ -248,6 +248,8 @@ export const ExtraDetail = async ({
   isSchduleArrayRequired = true,
   event_id,
   isDashboard = true,
+  isWebsiteUser = false,
+  currentDateTimeNew = null,
 }) => {
   let event_genre_ids = [];
   let event_language_ids = [];
@@ -289,6 +291,10 @@ export const ExtraDetail = async ({
   }
 
   if (isSchduleArrayRequired) {
+    let filters = ``;
+    if (isWebsiteUser) {
+      filters = ` concat(sch_date,' ',sch_time)>='${currentDateTimeNew}'`;
+    }
     let schedule_array = await global
       .knexConnection('event_schedule')
       .select(
@@ -300,6 +306,7 @@ export const ExtraDetail = async ({
         event_id,
         sch_is_active: 'Y',
       })
+      .whereRaw(filters)
       .orderBy('sch_date_time', 'ASC');
 
     for (let obj of schedule_array) {
@@ -340,6 +347,8 @@ export async function getEventList(req, res) {
       'ms_time_zones.tz_name',
       'organizations.org_name',
       'ms_cinemas.country_id',
+      'ms_cinemas.cinema_name',
+      'ms_cinemas.cinema_email',
     ])
     .leftJoin('ms_cinemas', 'ms_cinemas.cinema_id', 'ms_event.event_cinema_id')
     .leftJoin('ms_cities', 'ms_cities.city_id', 'ms_cinemas.city_id')
@@ -372,18 +381,51 @@ export async function getEventList(req, res) {
     .orderBy('event_id', 'desc')
     .paginate(pagination(limit, currentPage));
   let newArray = [];
+  let scheduleStart = {
+    days: 0,
+    hours: 0,
+    minute: 0,
+    second: 0,
+  };
+  let currentDateTimeNew = currentDateTime(null, 'YYYY-MM-DD HH:mm:ss', null);
+
   if (EventList && EventList.data) {
     for (let obj of EventList.data) {
       obj['event_end_date'] = currentDateTime(obj['event_end_date'], 'YYYY-MM-DD');
       obj['event_start_date'] = currentDateTime(obj['event_start_date'], 'YYYY-MM-DD');
-
+      currentDateTimeNew = currentDateTime(null, 'YYYY-MM-DD HH:mm:ss', obj.tz_name);
       let extraData = await ExtraDetail({
         event_id,
+        isWebsiteUser,
+        currentDateTimeNew,
       });
       newArray.push({
         ...obj,
         ...extraData,
       });
+
+      if (event_id) {
+        scheduleStart.second =
+          moment(extraData.event_sch_array[0].sch_date_time).diff(
+            moment(currentDateTimeNew),
+            'seconds',
+          ) % 60;
+        scheduleStart.minute =
+          moment(extraData.event_sch_array[0].sch_date_time).diff(
+            moment(currentDateTimeNew),
+            'minute',
+          ) % 60;
+
+        scheduleStart.days = moment(extraData.event_sch_array[0].sch_date_time).diff(
+          moment(currentDateTimeNew),
+          'days',
+        );
+        scheduleStart.hours =
+          moment(extraData.event_sch_array[0].sch_date_time).diff(
+            moment(currentDateTimeNew),
+            'hour',
+          ) % 24;
+      }
     }
   }
 
@@ -423,26 +465,12 @@ export async function getEventList(req, res) {
     newArray[0]['schedule_date_array'] = array;
   }
 
-  let scheduleStart = {
-    days: '',
-    hours: '',
-    minute: '',
-    second: '',
-  };
-
-  if (event_id) {
-    let currentDateTimeNew = currentDateTime(
-      null,
-      'YYYY-MM-DD HH:mm',
-      newArray[0].tz_name,
-    );
-  }
-
   return res.send({
     message: 'Event List',
     status: true,
     Records: newArray,
     scheduleStart,
+    currentDateTimeNew,
   });
 }
 
