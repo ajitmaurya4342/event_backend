@@ -497,7 +497,7 @@ const getActiveListData = async reqbody => {
       'ms_cinemas.cinema_name',
       'ms_cities.city_name',
     ])
-    .leftJoin('ms_event', 'ms_event.event_id', 'ms_event.event_cinema_id')
+    .leftJoin('ms_event', 'ms_event.event_id', 'event_schedule.event_id')
     .leftJoin('ms_cinemas', 'ms_cinemas.cinema_id', 'ms_event.event_cinema_id')
     .leftJoin('ms_cities', 'ms_cities.city_id', 'ms_cinemas.city_id')
     .leftJoin('ms_countries', 'ms_countries.country_id', 'ms_cinemas.country_id')
