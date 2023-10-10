@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import moment from 'moment';
 
 import { checkValidation } from '@/lib/checkValidation';
@@ -288,15 +289,22 @@ export const ExtraDetail = async ({
   }
 
   if (isSchduleArrayRequired) {
-    let schedule_array = await global.knexConnection('event_schedule').where({
-      event_id,
-      sch_is_active: 'Y',
-    });
+    let schedule_array = await global
+      .knexConnection('event_schedule')
+      .select(
+        global.knexConnection.raw(
+          `event_schedule.*,concat(event_schedule.sch_date,' ',sch_time) as sch_date_time`,
+        ),
+      )
+      .where({
+        event_id,
+        sch_is_active: 'Y',
+      })
+      .orderBy('sch_date_time', 'ASC');
 
     for (let obj of schedule_array) {
       obj['sch_seat_type_array'] = [];
       obj['sch_date'] = currentDateTime(obj['sch_date'], 'YYYY-MM-DD');
-
       let seatType = await global.knexConnection('event_sch_seat_type').where({
         event_sch_id: obj.event_sch_id,
       });
@@ -312,7 +320,7 @@ export const ExtraDetail = async ({
 };
 
 export async function getEventList(req, res) {
-  const reqbody = { ...req.query, ...req.body };
+  const reqbody = { ...req.query, ...req.body, ...req.params };
   const cinema_id = reqbody.cinema_id || null;
   const country_id = reqbody.country_id || null;
   const city_id = reqbody.city_id || null;
@@ -320,6 +328,7 @@ export async function getEventList(req, res) {
   const org_id = reqbody.org_id || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+  const isWebsiteUser = req['is_website_user'] || false;
 
   const EventList = await global
     .knexConnection('ms_event')
@@ -378,10 +387,62 @@ export async function getEventList(req, res) {
     }
   }
 
+  if (isWebsiteUser) {
+    let array = [];
+    if (newArray[0]['event_sch_array'].length) {
+      newArray[0]['event_sch_array'].map(z => {
+        let findIndex2 = array.findIndex(sch => {
+          return sch.schedule_date == z.sch_date;
+        });
+        if (findIndex2 >= 0) {
+          array[findIndex2]['schedule_array'].push({
+            sch_time: z.sch_time,
+            event_sch_id: z.event_sch_id,
+            sch_date_time: z.sch_date_time,
+            sch_date_unix: moment(z.sch_date_time).unix(),
+          });
+        } else {
+          let obj = {
+            schedule_date: z.sch_date,
+            schedule_array: [
+              {
+                sch_time: z.sch_time,
+                event_sch_id: z.event_sch_id,
+                sch_date_time: z.sch_date_time,
+                sch_date_unix: moment(z.sch_date_time).unix(),
+              },
+            ],
+          };
+          array.push(obj);
+        }
+      });
+      for (let data of array) {
+        data.schedule_array = _.orderBy(data.schedule_array, ['sch_date_unix', 'ASC']);
+      }
+    }
+    newArray[0]['schedule_date_array'] = array;
+  }
+
+  let scheduleStart = {
+    days: '',
+    hours: '',
+    minute: '',
+    second: '',
+  };
+
+  if (event_id) {
+    let currentDateTimeNew = currentDateTime(
+      null,
+      'YYYY-MM-DD HH:mm',
+      newArray[0].tz_name,
+    );
+  }
+
   return res.send({
     message: 'Event List',
     status: true,
     Records: newArray,
+    scheduleStart,
   });
 }
 

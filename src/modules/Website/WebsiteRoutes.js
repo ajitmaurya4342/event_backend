@@ -4,7 +4,7 @@ import {
   checkSessionExist,
   checkWebsiteSessionExist,
 } from '@/middlewares/checkSessionExist';
-import { getActiveEventList } from '@/modules/Event/EventController';
+import { getActiveEventList, getEventList } from '@/modules/Event/EventController';
 import {
   getBannerList,
   getCountryList,
@@ -22,6 +22,7 @@ export function WebsiteRoutes() {
   router.get('/getBannerList', checkWebsiteSessionExist, getBannerList);
   router.get('/getLanguageList', checkWebsiteSessionExist, getLanguageList);
   router.get('/getEventList', checkWebsiteSessionExist, getActiveEventList);
+  router.get('/getEventListById/:event_id', checkWebsiteSessionExist, getEventList);
   router.post('/tapPaymentCheckout', checkWebsiteSessionExist, tapPaymentCheckout);
   router.get('/confirmTapPayment', confirmTapPayment);
 
