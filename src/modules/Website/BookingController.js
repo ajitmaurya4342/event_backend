@@ -32,5 +32,28 @@ export async function tapPaymentCheckout(req, res) {
 }
 
 export async function confirmTapPayment(req, res) {
-  console.log(req, 'req jitu');
+  const success_redirect_url = `http://127.0.0.1:5173`;
+  const failed_redirect_url = `http://127.0.0.1:5173`;
+  console.log(req.query, 'tap pay id');
+  let config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: `https://api.tap.company/v2/charges/${req.query.tap_id}`,
+    headers: {
+      Authorization: 'Bearer sk_test_GslycEdgJNQCwSRxKYpW5zmB',
+      Accept: 'application/json',
+    },
+  };
+  let getPaymentStatus = await axios.request(config);
+  console.log(getPaymentStatus, 'payment response');
+  if (
+    getPaymentStatus.data.status == 'CAPTURED' ||
+    getPaymentStatus.data.status == 'captured'
+  ) {
+    console.log(getPaymentStatus.data.status, 'getPaymentStatus.data.status');
+    //do booking here
+    return success_redirect_url;
+  } else {
+    return failed_redirect_url;
+  }
 }

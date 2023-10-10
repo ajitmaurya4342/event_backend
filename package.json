@@ -26,6 +26,7 @@
     "@auth0/s3": "^1.0.0",
     "@godaddy/terminus": "^4.12.1",
     "aws-sdk": "^2.1450.0",
+    "axios": "^1.5.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
