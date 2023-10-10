@@ -7,7 +7,7 @@ export async function tapPaymentCheckout(req, res) {
     maxBodyLength: Infinity,
     url: 'https://api.tap.company/v2/charges',
     headers: {
-      Authorization: `Bearer sk_test_GslycEdgJNQCwSRxKYpW5zmB`,
+      Authorization: `Bearer ${process.env.PAYTAP_SECRET_KEY}`,
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
@@ -40,7 +40,7 @@ export async function confirmTapPayment(req, res) {
     maxBodyLength: Infinity,
     url: `https://api.tap.company/v2/charges/${req.query.tap_id}`,
     headers: {
-      Authorization: 'Bearer sk_test_GslycEdgJNQCwSRxKYpW5zmB',
+      Authorization: `Bearer ${process.env.PAYTAP_SECRET_KEY}`,
       Accept: 'application/json',
     },
   };
