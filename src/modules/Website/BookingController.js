@@ -52,8 +52,8 @@ export async function confirmTapPayment(req, res) {
   ) {
     console.log(getPaymentStatus.data.status, 'getPaymentStatus.data.status');
     //do booking here
-    return success_redirect_url;
+    return res.redirect(`${success_redirect_url}`);
   } else {
-    return failed_redirect_url;
+    return res.redirect(`${failed_redirect_url}`);
   }
 }
