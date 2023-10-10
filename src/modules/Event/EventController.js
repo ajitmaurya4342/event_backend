@@ -58,7 +58,7 @@ export async function addEditEvent(req, res) {
   //Validation of event Schedule array
   if (event_sch_array && event_sch_array.length) {
     for (let obj of event_sch_array) {
-      let checkScArray = ['sch_date', 'sch_time', 'sch_max_capacity', 'sch_is_active'];
+      let checkScArray = ['sch_date', 'sch_time', 'sch_is_active'];
       let resultSch = await checkValidation(checkScArray, obj);
       if (!resultSch.status) {
         return res.send(resultSch);
