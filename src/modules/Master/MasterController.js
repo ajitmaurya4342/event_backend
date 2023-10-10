@@ -11,6 +11,7 @@ export async function addEditCountries(req, res) {
     country_name,
     country_code,
     country_mob_code,
+    country_flag_upload,
     country_is_active,
     country_id,
   } = reqbody;
@@ -48,6 +49,7 @@ export async function addEditCountries(req, res) {
     let obj = {
       country_name: country_name || null,
       country_code: country_code || null,
+      country_flag_upload: country_flag_upload || null,
       country_mob_code: country_mob_code || null,
       country_is_active: country_is_active || 'Y',
       ...dataReturnUpdate(user_info, isUpdate),
