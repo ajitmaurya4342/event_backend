@@ -32,8 +32,8 @@ export async function tapPaymentCheckout(req, res) {
 }
 
 export async function confirmTapPayment(req, res) {
-  const success_redirect_url = `http://127.0.0.1:5173`;
-  const failed_redirect_url = `http://127.0.0.1:5173`;
+  const success_redirect_url = `${process.env.FRONTENDURL}`;
+  const failed_redirect_url = `${process.env.FRONTENDURL}`;
   console.log(req.query, 'tap pay id');
   let config = {
     method: 'get',
