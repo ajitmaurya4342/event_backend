@@ -615,9 +615,9 @@ export async function getBannerList(req, res) {
 export async function addEditSeatLayout(req, res) {
   let reqbody = req.body;
   const { user_info } = req;
-  const { seat_layout_name, seat_layout_data, sl_id, seat_count } = reqbody;
+  const { seat_layout_name, seat_layout_data, sl_id, seat_count, priceArray } = reqbody;
   const isUpdate = sl_id ? true : false;
-  let checkFields = ['seat_layout_name', 'seat_layout_data'];
+  let checkFields = ['seat_layout_name', 'seat_layout_data', 'priceArray'];
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
     return res.send(result);
@@ -645,6 +645,7 @@ export async function addEditSeatLayout(req, res) {
     let obj = {
       seat_layout_name: seat_layout_name || null,
       seat_layout_data: seat_layout_data ? JSON.stringify(seat_layout_data) : null,
+      price_data: seat_layout_data ? JSON.stringify(priceArray) : null,
       seat_count: seat_count || 0,
       // ...dataReturnUpdate(user_info, isUpdate),
     };
