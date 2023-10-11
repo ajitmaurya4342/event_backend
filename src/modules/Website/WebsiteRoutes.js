@@ -15,6 +15,12 @@ import {
   tapPaymentCheckout,
 } from '@/modules/Website/BookingController';
 
+import {
+  addEditCustomer,
+  getCustomerList,
+  signInCustomer,
+} from '../Customer/CustomerController';
+
 const router = Router();
 
 export function WebsiteRoutes() {
@@ -23,6 +29,13 @@ export function WebsiteRoutes() {
   router.get('/getLanguageList', checkWebsiteSessionExist, getLanguageList);
   router.get('/getEventList', checkWebsiteSessionExist, getActiveEventList);
   router.get('/getEventListById/:event_id', checkWebsiteSessionExist, getEventList);
+  router.post('/signup-customer', checkWebsiteSessionExist, addEditCustomer);
+  router.post('/signIn', checkWebsiteSessionExist, signInCustomer);
+  router.get(
+    '/getCustomerDetail/:customer_id',
+    checkWebsiteSessionExist,
+    getCustomerList,
+  );
   router.post('/tapPaymentCheckout', checkWebsiteSessionExist, tapPaymentCheckout);
   router.get('/confirmTapPayment', confirmTapPayment);
 
