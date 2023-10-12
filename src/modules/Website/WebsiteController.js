@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import { checkValidation } from '@/lib/checkValidation';
 import { currentDateTime } from '@/lib/helper';
 import { EVENT_DATA } from '@/modules/Event/EventController';
@@ -127,7 +129,7 @@ export const addReservationSeat = async (req, res) => {
 
   let currentDateTimeNew = currentDateTime(
     null,
-    'YYYY-MM-DD HH:mm',
+    'YYYY-MM-DD HH:mm:ss',
     event_data[0].tz_name,
   );
 
@@ -157,5 +159,119 @@ export const addReservationSeat = async (req, res) => {
     status: true,
     reservation_id,
     insert2,
+  });
+};
+
+export const getReservationSeat = async (req, res) => {
+  let reqbody = { ...req.body, ...req.params };
+  const { reservation_id } = reqbody;
+  const Booking_time = 10;
+
+  let checkFields = ['reservation_id'];
+
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let getReservationDetail = await global.knexConnection('ms_reservation').where({
+    reservation_id,
+    is_reserved: 'Y',
+  });
+  if (!getReservationDetail.length) {
+    return res.send({
+      status: false,
+      Records: `Seat Released or Booked`,
+    });
+  }
+  let currentDateTimeNew = currentDateTime(
+    null,
+    'YYYY-MM-DD HH:mm:ss',
+    getReservationDetail[0].timezone_name,
+  );
+  let obj = {
+    seat_name: [],
+    totalprice: 0,
+    minutes: 0,
+    seconds: 0,
+    reserved_time: '',
+    release_time: '',
+    currentDateTime: currentDateTimeNew,
+  };
+
+  getReservationDetail.map(z => {
+    obj.seat_name = [z.seat_name];
+    obj.totalprice += +parseFloat(z.seat_price);
+    obj.reserved_time = moment(z.created_at).format('YYYY-MM-DD HH:mm:ss');
+    obj.release_time = moment(z.created_at)
+      .add(Booking_time, 'minutes')
+      .format('YYYY-MM-DD HH:mm:ss');
+  });
+
+  obj.seconds =
+    moment(obj.release_time).diff(moment(obj.currentDateTime), 'seconds') % 60;
+  obj.minutes =
+    moment(obj.release_time).diff(moment(obj.currentDateTime), 'minutes') % 60;
+
+  let event_data = await EVENT_DATA({
+    event_id: getReservationDetail[0].event_id,
+    event_sch_id: getReservationDetail[0].event_sch_id,
+  });
+
+  event_data.Records[0] = {
+    ...event_data.Records[0],
+    ...obj,
+  };
+  return res.send({
+    status: true,
+    Records: [...event_data.Records],
+    getReservationDetail,
+  });
+};
+
+export const resetReserveTime = async (req, res) => {
+  let reqbody = { ...req.body, ...req.params };
+  const { reservation_id } = reqbody;
+
+  let checkFields = ['reservation_id'];
+
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let getReservationDetail = await global.knexConnection('ms_reservation').where({
+    reservation_id,
+    is_reserved: 'Y',
+  });
+  if (!getReservationDetail.length) {
+    return res.send({
+      status: false,
+      Records: `Seat Released or Booked`,
+    });
+  }
+  let currentDateTimeNew = currentDateTime(
+    null,
+    'YYYY-MM-DD HH:mm:ss',
+    getReservationDetail[0].timezone_name,
+  );
+
+  let update_obj = {
+    created_at: currentDateTimeNew,
+    updated_at: currentDateTimeNew,
+  };
+
+  await global
+    .knexConnection('ms_reservation')
+    .update({
+      ...update_obj,
+    })
+    .where({
+      reservation_id,
+    });
+
+  return res.send({
+    status: true,
+    Records: 'Timer Reset',
   });
 };

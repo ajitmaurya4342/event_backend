@@ -20,7 +20,11 @@ import {
   getCustomerList,
   signInCustomer,
 } from '../Customer/CustomerController';
-import { addReservationSeat } from './WebsiteController';
+import {
+  addReservationSeat,
+  getReservationSeat,
+  resetReserveTime,
+} from './WebsiteController';
 
 const router = Router();
 
@@ -40,5 +44,15 @@ export function WebsiteRoutes() {
   router.post('/tapPaymentCheckout', checkWebsiteSessionExist, tapPaymentCheckout);
   router.get('/confirmTapPayment', confirmTapPayment);
   router.post('/reserveSeats', checkWebsiteSessionExist, addReservationSeat);
+  router.get(
+    '/getReservationDetails/:reservation_id',
+    checkWebsiteSessionExist,
+    getReservationSeat,
+  );
+  router.get(
+    '/resetReserveTimer/:reservation_id',
+    checkWebsiteSessionExist,
+    resetReserveTime,
+  );
   return router;
 }

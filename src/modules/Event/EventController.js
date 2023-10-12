@@ -250,6 +250,7 @@ export const ExtraDetail = async ({
   isDashboard = true,
   isWebsiteUser = false,
   currentDateTimeNew = null,
+  event_sch_id = null,
 }) => {
   let event_genre_ids = [];
   let event_language_ids = [];
@@ -307,6 +308,13 @@ export const ExtraDetail = async ({
         sch_is_active: 'Y',
       })
       .whereRaw(filters)
+      .where(builder => {
+        if (event_sch_id) {
+          builder.where({
+            event_sch_id,
+          });
+        }
+      })
       .orderBy('sch_date_time', 'ASC');
 
     for (let obj of schedule_array) {
@@ -332,6 +340,7 @@ export const EVENT_DATA = async reqbody => {
   const city_id = reqbody.city_id || null;
   const event_id = reqbody.event_id || null;
   const org_id = reqbody.org_id || null;
+  const event_sch_id = reqbody.event_sch_id || null;
   const limit = reqbody.limit ? reqbody.limit : 100;
   const currentPage = reqbody.currentPage ? reqbody.currentPage : 1;
   const isWebsiteUser = reqbody['is_website_user'] || false;
@@ -373,7 +382,7 @@ export const EVENT_DATA = async reqbody => {
       }
       if (reqbody.search) {
         builder.whereRaw(
-          ` concat_ws(' ',cinema_name,cinema_email) like '%${req.query.search}%'`,
+          ` concat_ws(' ',cinema_name,cinema_email) like '%${reqbody.search}%'`,
         );
       }
     })
@@ -397,6 +406,7 @@ export const EVENT_DATA = async reqbody => {
         event_id,
         isWebsiteUser,
         currentDateTimeNew,
+        event_sch_id,
       });
       newArray.push({
         ...obj,
