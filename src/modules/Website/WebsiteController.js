@@ -322,3 +322,29 @@ export const releaseSeats = async (req, res) => {
     update_obj,
   });
 };
+
+export const allReserveSeatBySchedule = async (req, res) => {
+  let reqbody = { ...req.body, ...req.params };
+  const { event_sch_id } = reqbody;
+
+  let checkFields = ['event_sch_id'];
+
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let getReservationDetail = await global
+    .knexConnection('ms_reservation')
+    .select(['seat_name', 'seat_type', 'seat_group_id', 'column_name', 'row_name'])
+    .where({
+      event_sch_id,
+      is_reserved: 'Y',
+    });
+
+  return res.send({
+    status: true,
+    Records: [...getReservationDetail],
+    message: 'All Reserve Seat',
+  });
+};

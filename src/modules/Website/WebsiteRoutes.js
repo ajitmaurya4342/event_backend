@@ -22,6 +22,7 @@ import {
 } from '../Customer/CustomerController';
 import {
   addReservationSeat,
+  allReserveSeatBySchedule,
   getReservationSeat,
   releaseSeats,
   resetReserveTime,
@@ -56,5 +57,10 @@ export function WebsiteRoutes() {
     resetReserveTime,
   );
   router.get('/seatRelease/:reservation_id', checkWebsiteSessionExist, releaseSeats);
+  router.get(
+    '/getAllBlockedSeatsBySchedule/:event_sch_id',
+    checkWebsiteSessionExist,
+    allReserveSeatBySchedule,
+  );
   return router;
 }
