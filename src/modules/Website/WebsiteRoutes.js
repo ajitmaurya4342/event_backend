@@ -20,6 +20,7 @@ import {
   getCustomerList,
   signInCustomer,
 } from '../Customer/CustomerController';
+import { addReservationSeat } from './WebsiteController';
 
 const router = Router();
 
@@ -38,6 +39,6 @@ export function WebsiteRoutes() {
   );
   router.post('/tapPaymentCheckout', checkWebsiteSessionExist, tapPaymentCheckout);
   router.get('/confirmTapPayment', confirmTapPayment);
-
+  router.post('/reserveSeats', checkWebsiteSessionExist, addReservationSeat);
   return router;
 }

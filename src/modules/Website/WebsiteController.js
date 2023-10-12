@@ -1,134 +1,161 @@
 import { checkValidation } from '@/lib/checkValidation';
-import { dataReturnUpdate } from '@/lib/helper';
-import { pagination } from '@/lib/pagination';
+import { currentDateTime } from '@/lib/helper';
+import { EVENT_DATA } from '@/modules/Event/EventController';
+
+const uuidv4 = require('uuid/v4');
 
 var bcrypt = require('bcryptjs');
 
-export async function addEdtUser(req, res) {
+const checkPriceData = (seatLayoutData, price_array) => {
+  let price_data = {
+    status: true,
+    records: [],
+  };
+  seatLayoutData.map(seatData => {
+    let checkPrice = price_array.filter(priceData => {
+      return (
+        String(priceData.groupId) == String(seatData.seatGroupId) &&
+        String(seatData.seatPrice) == String(priceData.price)
+      );
+    });
+    if (checkPrice.length == 0 && !price_data.status) {
+      price_data.records.push(seatData);
+      price_data.status = true;
+    }
+  });
+  return price_data;
+};
+
+export const addReservationSeat = async (req, res) => {
   let reqbody = req.body;
   const { user_info } = req;
-  const {
-    first_name,
-    last_name,
-    email,
-    mobile_number,
-    employee_code,
-    user_name,
-    password,
-    user_is_active,
-    role_id,
-    user_id,
-  } = reqbody;
-  const isUpdate = user_id ? true : false;
-  let checkFields = [
-    'first_name',
-    'last_name',
-    'mobile_number',
-    'user_name',
-    'password',
-    'user_is_active',
-    'role_id',
-    'email',
-  ];
+  const { event_sch_id, event_id, selectedSeatsArray } = reqbody;
+
+  let checkFields = ['event_sch_id', 'event_id', 'selectedSeatsArray'];
+
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
     return res.send(result);
   }
 
-  let checkUserExist = await global
-    .knexConnection('users')
-    .select([
-      'user_name',
-      'first_name',
-      'last_name',
-      'email',
-      'role_name',
-      'password',
-      'users.user_id',
-      'users.role_id',
-    ])
-    .leftJoin('ms_roles', 'ms_roles.role_id', 'users.role_id')
-    .where(builder => {
-      builder.where({ user_name });
-      builder.orWhere({ email: user_name });
-    })
-    .andWhere(builder => {
-      if (isUpdate) {
-        builder.whereNotIn('user_id', [user_id]);
-      }
-    });
-
-  if (checkUserExist.length) {
-    return res.status(200).json({
-      message: 'User Already Exist',
-      status: false,
-      Records: checkUserExist,
-    });
-  } else {
-    let obj = {
-      first_name: first_name || null,
-      last_name: last_name || null,
-      email: email || null,
-      mobile_number: mobile_number || null,
-      employee_code: employee_code || null,
-      user_name: user_name || null,
-      user_is_active: user_is_active || 'Y',
-      role_id: role_id || 1,
-      ...dataReturnUpdate(user_info, isUpdate),
-    };
-    if (isUpdate) {
-      await global.knexConnection('users').update(obj).where({ user_id });
-    } else {
-      obj['password'] = bcrypt.hashSync(password, 10);
-      await global.knexConnection('users').insert(obj);
+  let arrayData = [];
+  for (let seatsObj of selectedSeatsArray) {
+    let checkFieldsAr = [
+      'seatGroupId',
+      'seatPrice',
+      'seatType',
+      'seatRowName',
+      'seatColName',
+    ];
+    let result2 = await checkValidation(checkFieldsAr, seatsObj);
+    if (!result2.status) {
+      return res.send(result2);
     }
-
-    return res.send({
-      status: true,
-      message: `User ${isUpdate ? 'Updated' : 'Created'} Successfully`,
-      obj,
+    let checkAlready = await global.knexConnection('ms_reservation').where({
+      is_reserved: 'Y',
+      seat_name: seatsObj.seatRowName + seatsObj.seatColName,
+      seat_group_id: seatsObj.seatGroupId,
     });
 
-    if (user_id) {
+    if (checkAlready.length) {
+      return res.send({
+        status: false,
+        message: 'Seat Already Reserved',
+      });
     }
+    arrayData.push({
+      seat_group_id: seatsObj.seatGroupId,
+      seat_type: seatsObj.seatType,
+      seat_name: seatsObj.seatRowName + seatsObj.seatColName,
+      row_name: seatsObj.seatRowName,
+      column_name: seatsObj.seatColName,
+      seat_price: seatsObj.seatPrice,
+    });
   }
-}
 
-export async function getUserList(req, res) {
-  const reqbody = { ...req.query, ...req.body };
-  const user_id = reqbody.user_id;
-  const limit = req.query.limit ? req.query.limit : 100;
-  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+  let reservation_id = uuidv4();
+  let event_data_all = await EVENT_DATA({
+    event_id,
+  });
+  let event_data = event_data_all.Records;
+  if (!event_data.length) {
+    return res.send({
+      status: false,
+      message: "Event Doesn't Exist",
+    });
+  }
 
-  const UserList = await global
-    .knexConnection('users')
-    .select([
-      'user_name',
-      'first_name',
-      'last_name',
-      'mobile_number',
-      'email',
-      'role_name',
-      'users.user_id',
-      'users.user_is_active',
-    ])
-    .leftJoin('ms_roles', 'ms_roles.role_id', 'users.role_id')
-    .where(builder => {
-      if (user_id) {
-        builder.where('user_id', '=', user_id);
-      }
-      if (req.query.search) {
-        builder.whereRaw(
-          ` concat_ws(' ',first_name,last_name,employee_code,email,mobile_number,user_name) like '%${req.query.search}%'`,
-        );
-      }
-    })
-    .orderBy('user_id', 'desc')
-    .paginate(pagination(limit, currentPage));
+  let event_data_sch = await global
+    .knexConnection('event_schedule')
+    .where({ event_sch_id });
+
+  if (!event_data_sch.length) {
+    return res.send({
+      status: false,
+      message: "Schedule Doesn't Exist",
+    });
+  }
+
+  let seatLayoutData = await global
+    .knexConnection('ms_seat_layout')
+    .select('price_data')
+    .where({
+      sl_id: event_data[0].sl_id,
+    });
+
+  if (!seatLayoutData.length) {
+    return res.send({
+      status: false,
+      message: "Seat Layout Doesn't Exist",
+    });
+  }
+
+  let priceArray = seatLayoutData[0].price_data
+    ? JSON.parse(seatLayoutData[0].price_data)
+    : [];
+
+  let checkPrice = checkPriceData(selectedSeatsArray, priceArray || []);
+
+  if (!checkPrice.status) {
+    return res.send({
+      status: false,
+      message: 'Price Unmatched',
+      checkPrice,
+      priceArray,
+    });
+  }
+
+  let currentDateTimeNew = currentDateTime(
+    null,
+    'YYYY-MM-DD HH:mm',
+    event_data[0].tz_name,
+  );
+
+  let duplicateData = {
+    reservation_id,
+    event_sch_id,
+    event_id,
+    is_seat_layout_exist: event_data[0].event_seating_type,
+    created_at: currentDateTimeNew,
+    timezone_name: event_data[0].tz_name,
+    created_by: user_info ? user_info.user_id : null,
+  };
+
+  let insertData = [];
+
+  arrayData.map(z => {
+    let obj = {
+      ...z,
+      ...duplicateData,
+    };
+    insertData.push(obj);
+  });
+
+  let insert2 = await global.knexConnection('ms_reservation').insert(insertData);
 
   return res.send({
-    message: 'User List',
     status: true,
-    Records: UserList,
+    reservation_id,
+    insert2,
   });
-}
+};

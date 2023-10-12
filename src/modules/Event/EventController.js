@@ -326,16 +326,15 @@ export const ExtraDetail = async ({
   };
 };
 
-export async function getEventList(req, res) {
-  const reqbody = { ...req.query, ...req.body, ...req.params };
+export const EVENT_DATA = async reqbody => {
   const cinema_id = reqbody.cinema_id || null;
   const country_id = reqbody.country_id || null;
   const city_id = reqbody.city_id || null;
   const event_id = reqbody.event_id || null;
   const org_id = reqbody.org_id || null;
-  const limit = req.query.limit ? req.query.limit : 100;
-  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
-  const isWebsiteUser = req['is_website_user'] || false;
+  const limit = reqbody.limit ? reqbody.limit : 100;
+  const currentPage = reqbody.currentPage ? reqbody.currentPage : 1;
+  const isWebsiteUser = reqbody['is_website_user'] || false;
 
   const EventList = await global
     .knexConnection('ms_event')
@@ -372,7 +371,7 @@ export async function getEventList(req, res) {
       if (event_id) {
         builder.where('ms_event.event_id', '=', event_id);
       }
-      if (req.query.search) {
+      if (reqbody.search) {
         builder.whereRaw(
           ` concat_ws(' ',cinema_name,cinema_email) like '%${req.query.search}%'`,
         );
@@ -430,8 +429,13 @@ export async function getEventList(req, res) {
   }
 
   if (isWebsiteUser) {
-    let array = [];
-    if (newArray[0]['event_sch_array'].length) {
+    if (
+      newArray[0] &&
+      newArray[0]['event_sch_array'] &&
+      newArray[0]['event_sch_array'].length
+    ) {
+      let array = [];
+
       newArray[0]['event_sch_array'].map(z => {
         let findIndex2 = array.findIndex(sch => {
           return sch.schedule_date == z.sch_date;
@@ -461,17 +465,24 @@ export async function getEventList(req, res) {
       for (let data of array) {
         data.schedule_array = _.orderBy(data.schedule_array, ['sch_date_unix', 'ASC']);
       }
+      newArray[0]['schedule_date_array'] = array;
     }
-    newArray[0]['schedule_date_array'] = array;
   }
 
-  return res.send({
+  return {
     message: 'Event List',
     status: true,
     Records: newArray,
     scheduleStart,
     currentDateTimeNew,
-  });
+  };
+};
+
+export async function getEventList(req, res) {
+  const reqbody = { ...req.query, ...req.body, ...req.params };
+  reqbody['is_website_user'] = req['is_website_user'] || false;
+  let getEventData = await EVENT_DATA(reqbody);
+  return res.send({ ...getEventData });
 }
 
 const getActiveListData = async reqbody => {
