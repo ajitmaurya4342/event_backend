@@ -645,7 +645,7 @@ export async function addEditSeatLayout(req, res) {
     let obj = {
       seat_layout_name: seat_layout_name || null,
       seat_layout_data: seat_layout_data ? JSON.stringify(seat_layout_data) : null,
-      price_data: seat_layout_data ? JSON.stringify(priceArray) : null,
+      price_data: priceArray ? JSON.stringify(priceArray) : null,
       seat_count: seat_count || 0,
       // ...dataReturnUpdate(user_info, isUpdate),
     };
@@ -667,7 +667,7 @@ export async function getSeatLayoutList(req, res) {
   const curr_is_active = reqbody.curr_is_active || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
-  let seat_layout_select = ['sl_id', 'seat_layout_name', 'seat_count'];
+  let seat_layout_select = ['sl_id', 'seat_layout_name', 'seat_count', 'price_data'];
   if (sl_id) {
     seat_layout_select.push('seat_layout_data');
   }

@@ -48,7 +48,7 @@ export function MasterRoutes() {
   router.get('/getbannerlist', checkSessionExist, getBannerList);
 
   router.post('/add-edit-seatlayout', addEditSeatLayout);
-  router.get('/getSeatLayoutList', checkSessionExist, getSeatLayoutList);
+  router.get('/getSeatLayoutList', getSeatLayoutList);
 
   router.get('/gettimezonelist', checkSessionExist, getTimeZoneList);
   router.route('/uploadimage').post(fileMulter.uploadImageController);
