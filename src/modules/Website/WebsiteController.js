@@ -63,6 +63,7 @@ export const addReservationSeat = async (req, res) => {
       return res.send({
         status: false,
         message: 'Seat Already Reserved',
+        checkAlready,
       });
     }
     arrayData.push({
@@ -158,7 +159,6 @@ export const addReservationSeat = async (req, res) => {
   return res.send({
     status: true,
     reservation_id,
-    insert2,
   });
 };
 
@@ -273,5 +273,52 @@ export const resetReserveTime = async (req, res) => {
   return res.send({
     status: true,
     Records: 'Timer Reset',
+  });
+};
+
+export const releaseSeats = async (req, res) => {
+  let reqbody = { ...req.body, ...req.params };
+  const { reservation_id } = reqbody;
+
+  let checkFields = ['reservation_id'];
+
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let getReservationDetail = await global.knexConnection('ms_reservation').where({
+    reservation_id,
+    is_reserved: 'Y',
+  });
+  if (!getReservationDetail.length) {
+    return res.send({
+      status: false,
+      Records: `Seat Released or Booked`,
+    });
+  }
+  let currentDateTimeNew = currentDateTime(
+    null,
+    'YYYY-MM-DD HH:mm:ss',
+    getReservationDetail[0].timezone_name,
+  );
+
+  let update_obj = {
+    is_reserved: 'N',
+  };
+
+  await global
+    .knexConnection('ms_reservation')
+    .update({
+      ...update_obj,
+    })
+    .where({
+      reservation_id,
+    });
+
+  return res.send({
+    status: true,
+    Records: 'Seat Released',
+    update_obj,
   });
 };
