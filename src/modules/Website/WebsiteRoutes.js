@@ -20,6 +20,7 @@ import {
   getCustomerList,
   signInCustomer,
 } from '../Customer/CustomerController';
+import { addEditGuest } from '../Guest/GuestController';
 import {
   addReservationSeat,
   allReserveSeatBySchedule,
@@ -62,5 +63,6 @@ export function WebsiteRoutes() {
     checkWebsiteSessionExist,
     allReserveSeatBySchedule,
   );
+  router.post('/guestCheckout', checkWebsiteSessionExist, addEditGuest);
   return router;
 }

@@ -66,7 +66,7 @@ export async function addEditCustomer(req, res) {
     return res.send({
       status: true,
       message: `Customer ${isUpdate ? 'Updated' : 'Created'} Successfully`,
-      obj,
+      Records: [obj],
     });
   }
 }

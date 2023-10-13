@@ -9,6 +9,7 @@ import { EventRoutes } from './modules/Event/EventRoutes';
 import { MasterRoutes } from './modules/Master/MasterRoutes';
 import { UserRoutes } from './modules/User/UserRoutes';
 import { WebsiteRoutes } from './modules/Website/WebsiteRoutes';
+import { GuestRoutes } from './modules/Guest/GuestRoutes';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ export function getRootRouter(ops: AppRouterOptions) {
   router.use('/', LoginRoutes());
   router.use('/admin', UserRoutes());
   router.use('/admin', CustomerRoutes());
+  router.use('/admin', GuestRoutes());
   router.use('/admin', MasterRoutes());
   router.use('/admin', CinemaRoutes());
   router.use('/admin', EventRoutes());
