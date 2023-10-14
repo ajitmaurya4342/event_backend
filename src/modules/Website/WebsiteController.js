@@ -200,11 +200,6 @@ export const getReservationSeat = async (req, res) => {
     currentDateTime: currentDateTimeNew,
   };
 
-  obj.seconds =
-    moment(obj.release_time).diff(moment(obj.currentDateTime), 'seconds') % 60;
-  obj.minutes =
-    moment(obj.release_time).diff(moment(obj.currentDateTime), 'minutes') % 60;
-
   let event_data = await EVENT_DATA({
     event_id: getReservationDetail[0].event_id,
     event_sch_id: getReservationDetail[0].event_sch_id,
@@ -218,6 +213,11 @@ export const getReservationSeat = async (req, res) => {
       .add(z.seat_release_time || Booking_time, 'minutes')
       .format('YYYY-MM-DD HH:mm:ss');
   });
+
+  obj.seconds =
+    moment(obj.release_time).diff(moment(obj.currentDateTime), 'seconds') % 60;
+  obj.minutes =
+    moment(obj.release_time).diff(moment(obj.currentDateTime), 'minutes') % 60;
 
   event_data.Records[0] = {
     ...event_data.Records[0],

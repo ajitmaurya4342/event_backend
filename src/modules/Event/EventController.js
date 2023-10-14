@@ -414,7 +414,7 @@ export const EVENT_DATA = async reqbody => {
         ...extraData,
       });
 
-      if (event_id) {
+      if (event_id && extraData.event_sch_array.length) {
         scheduleStart.second =
           moment(extraData.event_sch_array[0].sch_date_time).diff(
             moment(currentDateTimeNew),

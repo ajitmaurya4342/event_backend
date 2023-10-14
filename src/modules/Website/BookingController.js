@@ -24,8 +24,8 @@ export async function tapPaymentCheckout(req, res) {
     'customer_email',
     'customer_mobile',
     'is_guest',
-    'success_url_frontend',
-    'failed_url_frontend',
+    'success_frontend_url',
+    'failed_frontend_url',
   ];
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
@@ -90,6 +90,7 @@ export async function tapPaymentCheckout(req, res) {
     return res.send({
       status: false,
       message: 'Missing Payment Data',
+      data: payment_credential.data,
     });
   }
 
@@ -99,8 +100,9 @@ export async function tapPaymentCheckout(req, res) {
   });
 
   let tapPaymentObject = {
-    amount: totalAmount,
-    currency: event_data && event_data[0] ? event_data[0].curr_code : '',
+    amount: totalAmount.toFixed(2),
+    //currency: event_data && event_data[0] ? event_data[0].curr_code : '',
+    currency: 'KWD',
     threeDSecure: true,
     save_card: false, //based on your choice
     customer_initiated: true,
@@ -193,7 +195,7 @@ export async function confirmTapPayment(req, res) {
   const { reservation_id } = req.query;
   console.log(reservation_id, 'reservation_id');
   const detailPayment = await global
-    .knexConnection('ms_payment_credential')
+    .knexConnection('ms_payment_booking_detail')
     .where({ reservation_id });
   const reservation_detail = await global
     .knexConnection('ms_reservation')
@@ -248,17 +250,20 @@ export async function confirmTapPayment(req, res) {
     console.log(getPaymentStatus.data.status, 'getPaymentStatus.data.status');
 
     await global
-      .knexConnection('ms_payment_credential')
+      .knexConnection('ms_payment_booking_detail')
       .where({ reservation_id })
       .update({
         is_booked: 'Y',
         payment_capture: JSON.stringify(getPaymentStatus.data),
       });
+    await global.knexConnection('ms_reservation').where({ reservation_id }).update({
+      is_booked: 'Y',
+    });
     //do booking here
     return res.redirect(`${success_redirect_url}`);
   } else {
     await global
-      .knexConnection('ms_payment_credential')
+      .knexConnection('ms_payment_booking_detail')
       .where({ reservation_id })
       .update({
         payment_capture: JSON.stringify(getPaymentStatus.data),

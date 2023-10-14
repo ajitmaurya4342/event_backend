@@ -53,7 +53,7 @@ export const PaymentCredentialFunction = async ({ cinema_id, pm_id }) => {
   }
 
   let getPaymentCredential = await global
-    .knexConnection('ms_payment_mode')
+    .knexConnection('ms_payment_credential')
     .where({ pm_id })
     .where(builder => {
       if (cinema_id) {
