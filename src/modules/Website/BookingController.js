@@ -98,10 +98,12 @@ export async function tapPaymentCheckout(req, res) {
   checkReservation.map(z => {
     totalAmount += parseFloat(z.seat_price);
   });
+  let paymentCurrency = event_data && event_data[0] ? event_data[0].curr_code : '';
 
+  console.log(paymentCurrency, 'paymentCurrency');
   let tapPaymentObject = {
     amount: totalAmount.toFixed(2),
-    //currency: event_data && event_data[0] ? event_data[0].curr_code : '',
+    // currency: paymentCurrency,
     currency: 'KWD',
     threeDSecure: true,
     save_card: false, //based on your choice
