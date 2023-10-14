@@ -36,3 +36,35 @@ export const dataReturnUpdate = (userInfo, isUpdate = false) => {
   }
   return obj;
 };
+
+export const PaymentCredentialFunction = async ({ cinema_id, pm_id }) => {
+  let dataSuccess = {
+    status: true,
+    data: {},
+  };
+
+  let dataFail = {
+    status: false,
+    data: {},
+  };
+
+  if (!pm_id) {
+    return dataFail;
+  }
+
+  let getPaymentCredential = await global
+    .knexConnection('ms_payment_mode')
+    .where({ pm_id })
+    .where(builder => {
+      if (cinema_id) {
+        builder.where('cinema_id', cinema_id);
+      }
+    });
+
+  if (getPaymentCredential.length && getPaymentCredential[0].credential) {
+    dataSuccess.data = JSON.parse(getPaymentCredential[0].credential);
+    return dataSuccess;
+  } else {
+    return dataFail;
+  }
+};

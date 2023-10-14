@@ -357,6 +357,7 @@ export const EVENT_DATA = async reqbody => {
       'ms_cinemas.country_id',
       'ms_cinemas.cinema_name',
       'ms_cinemas.cinema_email',
+      'ms_cinemas.cinema_seat_release_time',
     ])
     .leftJoin('ms_cinemas', 'ms_cinemas.cinema_id', 'ms_event.event_cinema_id')
     .leftJoin('ms_cities', 'ms_cities.city_id', 'ms_cinemas.city_id')

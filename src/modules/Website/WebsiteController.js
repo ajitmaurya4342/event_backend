@@ -142,6 +142,7 @@ export const addReservationSeat = async (req, res) => {
     created_at: currentDateTimeNew,
     timezone_name: event_data[0].tz_name,
     created_by: user_info ? user_info.user_id : null,
+    seat_release_time: event_data[0].cinema_seat_release_time || 10,
   };
 
   let insertData = [];
@@ -165,7 +166,7 @@ export const addReservationSeat = async (req, res) => {
 export const getReservationSeat = async (req, res) => {
   let reqbody = { ...req.body, ...req.params };
   const { reservation_id } = reqbody;
-  const Booking_time = 10;
+  let Booking_time = 10;
 
   let checkFields = ['reservation_id'];
 
@@ -199,15 +200,6 @@ export const getReservationSeat = async (req, res) => {
     currentDateTime: currentDateTimeNew,
   };
 
-  getReservationDetail.map(z => {
-    obj.seat_name = [z.seat_name];
-    obj.totalprice += +parseFloat(z.seat_price);
-    obj.reserved_time = moment(z.created_at).format('YYYY-MM-DD HH:mm:ss');
-    obj.release_time = moment(z.created_at)
-      .add(Booking_time, 'minutes')
-      .format('YYYY-MM-DD HH:mm:ss');
-  });
-
   obj.seconds =
     moment(obj.release_time).diff(moment(obj.currentDateTime), 'seconds') % 60;
   obj.minutes =
@@ -216,6 +208,15 @@ export const getReservationSeat = async (req, res) => {
   let event_data = await EVENT_DATA({
     event_id: getReservationDetail[0].event_id,
     event_sch_id: getReservationDetail[0].event_sch_id,
+  });
+
+  getReservationDetail.map(z => {
+    obj.seat_name = [z.seat_name];
+    obj.totalprice += +parseFloat(z.seat_price);
+    obj.reserved_time = moment(z.created_at).format('YYYY-MM-DD HH:mm:ss');
+    obj.release_time = moment(z.created_at)
+      .add(z.seat_release_time || Booking_time, 'minutes')
+      .format('YYYY-MM-DD HH:mm:ss');
   });
 
   event_data.Records[0] = {
