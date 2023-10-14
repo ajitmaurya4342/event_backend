@@ -239,7 +239,7 @@ export async function confirmTapPayment(req, res) {
       .where({ reservation_id })
       .update({
         is_booked: 'Y',
-        payment_capture: JSON.stringify(getPaymentStatus),
+        payment_capture: JSON.stringify(getPaymentStatus.data),
       });
     //do booking here
     return res.redirect(`${success_redirect_url}`);
@@ -248,7 +248,7 @@ export async function confirmTapPayment(req, res) {
       .knexConnection('ms_payment_credential')
       .where({ reservation_id })
       .update({
-        payment_capture: JSON.stringify(getPaymentStatus),
+        payment_capture: JSON.stringify(getPaymentStatus.data),
       });
     return res.redirect(`${failed_redirect_url}`);
   }
