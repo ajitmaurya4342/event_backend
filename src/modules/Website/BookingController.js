@@ -32,6 +32,19 @@ export async function tapPaymentCheckout(req, res) {
     return res.send(result);
   }
 
+  const paymentDetailC = await global
+    .knexConnection('ms_payment_booking_detail')
+    .where({
+      reservation_id,
+    });
+
+  if (paymentDetailC.length) {
+    return res.send({
+      status: false,
+      message: 'Payment Already Initiated with reservation id',
+    });
+  }
+
   const checkReservation = await global.knexConnection('ms_reservation').where({
     is_reserved: 'Y',
     reservation_id,
