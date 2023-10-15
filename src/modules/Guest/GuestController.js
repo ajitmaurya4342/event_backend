@@ -106,3 +106,38 @@ export async function getGuestList(req, res) {
     Records: UserList,
   });
 }
+export async function addSubscriber(req, res) {
+  let reqbody = req.body;
+
+  console.log(reqbody, 'reqbody');
+  const { subscriber_info } = req;
+  const { subscriber_email } = reqbody;
+  let checkFields = ['subscriber_email'];
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let checkSubscriberExist = await global
+    .knexConnection('ms_subscriber')
+    .select(['subscriber_email'])
+    .where(builder => {
+      builder.where({ subscriber_email });
+    });
+
+  let obj = {
+    subscriber_email: subscriber_email || null,
+    ...dataReturnUpdate(subscriber_info),
+  };
+  if (checkSubscriberExist.length) {
+  } else {
+    await global.knexConnection('ms_subscriber').insert(obj);
+  }
+  return res.send({
+    status: true,
+    message: `${
+      checkSubscriberExist.length ? 'Already Subscribed' : 'Subscribed Successfully'
+    } `,
+    Records: [obj],
+  });
+}
