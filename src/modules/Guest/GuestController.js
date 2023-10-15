@@ -111,7 +111,17 @@ export async function addSubscriber(req, res) {
 
   console.log(reqbody, 'reqbody');
   const { subscriber_info } = req;
-  const { subscriber_email } = reqbody;
+
+  console.log(subscriber_info, 'subscriber_info');
+
+  const {
+    subscriber_email,
+    subscriber_name,
+    subscriber_subject,
+    subscriber_message,
+    is_subscriber,
+  } = reqbody;
+
   let checkFields = ['subscriber_email'];
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
@@ -127,16 +137,24 @@ export async function addSubscriber(req, res) {
 
   let obj = {
     subscriber_email: subscriber_email || null,
+    subscriber_name: subscriber_name || null,
+    subscriber_subject: subscriber_subject || null,
+    subscriber_message: subscriber_message || null,
+    is_subscriber: is_subscriber || 'Y',
     ...dataReturnUpdate(subscriber_info),
   };
-  if (checkSubscriberExist.length) {
+  if (checkSubscriberExist.length && is_subscriber == 'Y') {
   } else {
     await global.knexConnection('ms_subscriber').insert(obj);
   }
   return res.send({
     status: true,
     message: `${
-      checkSubscriberExist.length ? 'Already Subscribed' : 'Subscribed Successfully'
+      is_subscriber == 'N'
+        ? 'Response Received. We will get back to you soon !'
+        : checkSubscriberExist.length
+        ? 'Already Subscribed'
+        : 'Subscribed Successfully'
     } `,
     Records: [obj],
   });
