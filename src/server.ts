@@ -16,18 +16,17 @@ import { checkLogin } from './modules/Login/LoginController';
 const port = process.env.PORT;
 export const server = createServer(app);
 
-setInterval(
-  () => {
-    releaseSeats().then(res => {});
-  },
-  1000 * 60 * 2,
-);
-
 Promise.all([connectToDatabase(), connectToCinematicDatabase(), connectToRedis()])
   .then(async ([db, mainDb, redis]) => {
     global.knexConnection = db;
     global.__base = __dirname;
     const ops: AppRouterOptions = { db, mainDb, app, redis };
+    setInterval(
+      () => {
+        releaseSeats().then(res => {});
+      },
+      1000 * 60 * 2,
+    );
 
     // load middlewares here
     app.use(cacheResponse);
