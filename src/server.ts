@@ -10,8 +10,18 @@ import { setRequestVariables } from '@/middlewares/setRequestVariables';
 import { getRootRouter } from '@/router';
 import { logger, setupGracefulShutdown } from '@/utils/utils';
 
+import { releaseSeats } from './cronjobFunction';
+import { checkLogin } from './modules/Login/LoginController';
+
 const port = process.env.PORT;
 export const server = createServer(app);
+
+setInterval(
+  () => {
+    releaseSeats().then(res => {});
+  },
+  1000 * 60 * 2,
+);
 
 Promise.all([connectToDatabase(), connectToCinematicDatabase(), connectToRedis()])
   .then(async ([db, mainDb, redis]) => {

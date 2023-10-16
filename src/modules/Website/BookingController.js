@@ -1,5 +1,6 @@
 import axios from 'axios';
 import ejs from 'ejs';
+import moment from 'moment';
 
 import { checkValidation } from '@/lib/checkValidation';
 import { currentDateTime, PaymentCredentialFunction, sendEmail } from '@/lib/helper';
@@ -75,7 +76,7 @@ export async function tapPaymentCheckout(req, res) {
 
   BASEURL = BACKEND_URL.go_value;
 
-  const redirectUrl = `${BASEURL}/api/confirmTapPayment?reservation_id=${reservation_id}`;
+  const redirectUrl = `${BASEURL}/api/confirmTapPayment?reservation_id=${reservation_id}&event_token=${req['token']}`;
 
   // @ts-ignore
   const payment_credential = await PaymentCredentialFunction({
@@ -199,7 +200,7 @@ export async function tapPaymentCheckout(req, res) {
 }
 
 export async function confirmTapPayment(req, res) {
-  const { reservation_id } = req.query;
+  const { reservation_id, event_token } = req.query;
   console.log(reservation_id, 'reservation_id');
   const detailPayment = await global
     .knexConnection('ms_payment_booking_detail')
@@ -263,9 +264,7 @@ export async function confirmTapPayment(req, res) {
         is_booked: 'Y',
         payment_capture: JSON.stringify(getPaymentStatus.data),
       });
-    await global.knexConnection('ms_reservation').where({ reservation_id }).update({
-      is_booked: 'Y',
-    });
+
     let BASEURL = ``;
     const [BACKEND_URL] = await global.knexConnection('global_options').where({
       go_key: 'BASE_URL_BACKEND',
@@ -273,8 +272,11 @@ export async function confirmTapPayment(req, res) {
     BASEURL = BACKEND_URL.go_value;
 
     const config = {
-      method: 'get',
+      method: 'post',
       url: `${BASEURL}/api/createTransation/${reservation_id}`,
+      headers: {
+        Authorization: event_token,
+      },
     };
     const transactionResponse = await axios(config);
     if (
@@ -283,8 +285,9 @@ export async function confirmTapPayment(req, res) {
       transactionResponse.data.status
     ) {
       console.log(transactionResponse.data, 'done');
-
-      return res.redirect(`${success_redirect_url}`);
+      return res.redirect(
+        `${success_redirect_url}/${transactionResponse.data.booking_code}`,
+      );
     } else {
       console.log('failed');
     }
@@ -303,21 +306,148 @@ export async function confirmTapPayment(req, res) {
 
 export async function createTransation(req, res) {
   console.log(req.query, 'create transaction');
-  let emailData = {
-    booking_id: 'test event',
-    booking_date_time: 'test event',
-    event_name: 'test event',
-    cinema_name: 'test event',
-    city_name: 'test event',
-    event_date_time: 'test event',
-    seats: 'Jitu',
-    totalPrice: 'Jitu',
-    currency: 'Jitu',
+  let reqbody = { ...req.body, ...req.params };
+  const { user_info } = req;
+  const isWebsiteUser = req['is_website_user'] || false;
+  const { reservation_id } = reqbody;
+  let checkFields = ['reservation_id'];
+  let result = await checkValidation(checkFields, reqbody);
+  if (!result.status) {
+    return res.send(result);
+  }
+
+  let getReservationDetail = await global.knexConnection('ms_reservation').where({
+    reservation_id,
+    is_reserved: 'Y',
+  });
+  let getPaymentDetail = [];
+  if (isWebsiteUser) {
+    getPaymentDetail = await global.knexCnnection('ms_payment_booking_detail').where({
+      reservation_id,
+      is_booked: 'Y',
+    });
+    if (!getPaymentDetail.length) {
+      return res.send({
+        status: false,
+        Records: `Payment Not Done from Website`,
+      });
+    }
+  }
+
+  if (!getReservationDetail.length) {
+    return res.send({
+      status: false,
+      Records: `Seat Released or Booked`,
+    });
+  }
+  let currentDateTimeNew = currentDateTime(
+    null,
+    'YYYY-MM-DD HH:mm:ss',
+    getReservationDetail[0].timezone_name,
+  );
+
+  let event_data_all = await EVENT_DATA({
+    event_id: getReservationDetail[0].event_id,
+    event_sch_id: getReservationDetail[0].event_sch_id,
+  });
+
+  let event_data = event_data_all.Records[0];
+
+  let insertObj = {
+    event_id: getReservationDetail[0].event_id,
+    schedule_id: getReservationDetail[0].event_sch_id,
+    c_email:
+      getPaymentDetail[0] && getPaymentDetail[0].email
+        ? getPaymentDetail[0].email
+        : null,
+    c_country_code:
+      getPaymentDetail[0] && getPaymentDetail[0].country_code
+        ? getPaymentDetail[0].country_code
+        : null,
+    is_guest:
+      getPaymentDetail[0] && getPaymentDetail[0].is_guest
+        ? getPaymentDetail[0].is_guest
+        : null,
+    c_phone_number:
+      getPaymentDetail[0] && getPaymentDetail[0].phone_number
+        ? getPaymentDetail[0].phone_number
+        : null,
+    event_name: event_data.event_name,
+    cinema_name: event_data.cinema_name,
+    cinema_email: event_data.cinema_email || null,
+    city_name: event_data.city_name || null,
+    country: event_data.country_name || null,
+    timezone: event_data.tz_name || null,
+    currency: event_data.curr_code || null,
+    payment_mode: event_data.payment_mode || null,
+    payment_mode_id: event_data.payment_mode || null,
+    booking_type_name: isWebsiteUser ? 'Website' : 'Box Office',
+    event_date: moment(event_data.event_sch_array[0].sch_date).format('YYYY-MM-DD'),
+    event_time: moment(event_data.event_sch_array[0].sch_time).format('YYYY-MM-DD'),
+    booking_date_time: currentDateTimeNew,
+    created_by: (user_info && user_info.user_id) || null,
+    reservation_id,
   };
+
+  let insertBookingId = await global.knexConnection('ms_booking').insert(insertObj);
+
+  let transaction_array = [];
+  let seatNames = [];
+  let totalAmount = 0;
+  getReservationDetail.map(z => {
+    seatNames.push(z.seat_name);
+    // @ts-ignore
+    totalAmount += parseFloat(z.seat_price).toFixed(3);
+    let obj = {
+      booking_id: insertBookingId[0],
+      seat_name: z.seat_name,
+      seat_type: z.seat_type,
+      seat_group_id: z.seat_group_id,
+      seat_price: z.seat_price,
+    };
+    transaction_array.push({ ...obj });
+  });
+
+  await global.knexConnection('ms_booking_transaction').insert(transaction_array);
+
+  let booking_code = 'TKT';
+  let prefix_array = ['00000', '0000', '000', '00', '0'];
+  let string_length = String(insertBookingId[0]).length - 1;
+  let booking_number_new = prefix_array[string_length]
+    ? `${prefix_array[string_length]}${insertBookingId[0]}`
+    : insertBookingId[0];
+  booking_code += booking_number_new;
+
+  let emailData = {
+    booking_id: booking_code,
+    booking_date_time: insertObj.booking_date_time,
+    event_name: insertObj.event_name,
+    cinema_name: insertObj.city_name,
+    city_name: insertObj.city_name,
+    event_date_time: moment(insertObj.event_date + ' ' + insertObj.event_time).format(
+      'YYYY-MM-DD HH:mm',
+    ),
+    seats: seatNames.join(', '),
+    totalPrice: totalAmount,
+    currency: insertObj.currency,
+  };
+
+  await global.knexConnection('ms_reservation').where({ reservation_id }).update({
+    is_booked: 'Y',
+  });
+
+  await global
+    .knexConnection('ms_booking')
+    .where({ booking_id: insertBookingId[0] })
+    .update({
+      booking_code,
+    });
+
   await sendTicketEmail(emailData);
   return res.send({
     status: true,
     message: 'transaction created',
+    booking_code,
   });
 }
 export const sendTicketEmail = async reqbody => {
