@@ -6,10 +6,10 @@ import { LoginRoutes } from '@/modules/Login/LoginRoutes';
 import { CinemaRoutes } from './modules/Cinema/CinemaRoutes';
 import { CustomerRoutes } from './modules/Customer/CustomerRoutes';
 import { EventRoutes } from './modules/Event/EventRoutes';
+import { GuestRoutes } from './modules/Guest/GuestRoutes';
 import { MasterRoutes } from './modules/Master/MasterRoutes';
 import { UserRoutes } from './modules/User/UserRoutes';
 import { WebsiteRoutes } from './modules/Website/WebsiteRoutes';
-import { GuestRoutes } from './modules/Guest/GuestRoutes';
 
 const router = Router();
 

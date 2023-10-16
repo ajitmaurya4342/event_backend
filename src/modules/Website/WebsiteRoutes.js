@@ -12,6 +12,7 @@ import {
 } from '@/modules/Master/MasterController';
 import {
   confirmTapPayment,
+  createTransation,
   tapPaymentCheckout,
 } from '@/modules/Website/BookingController';
 
@@ -46,6 +47,7 @@ export function WebsiteRoutes() {
   );
   router.post('/tapPaymentCheckout', checkWebsiteSessionExist, tapPaymentCheckout);
   router.get('/confirmTapPayment', confirmTapPayment);
+  router.get('/createTransation/:reservation_id', createTransation);
   router.post('/reserveSeats', checkWebsiteSessionExist, addReservationSeat);
   router.get(
     '/getReservationDetails/:reservation_id',

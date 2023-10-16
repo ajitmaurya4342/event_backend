@@ -1,7 +1,6 @@
 import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-
   await knex.schema.createTable('ms_event', table => {
     table.increments('event_id').primary();
     table.integer('event_cinema_id');
@@ -45,16 +44,15 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.schema.createTable('event_genre', table => {
     table.increments('evt_g_id').primary();
-    table.integer('genre_id'); 
-    table.integer('event_id'); 
+    table.integer('genre_id');
+    table.integer('event_id');
   });
 
   await knex.schema.createTable('event_language', table => {
     table.increments('evt_l_id').primary();
-    table.integer('lang_id'); 
-    table.integer('event_id'); 
+    table.integer('lang_id');
+    table.integer('event_id');
   });
-
 }
 
 export async function down(knex: Knex): Promise<void> {

@@ -1,9 +1,14 @@
 import axios from 'axios';
+import ejs from 'ejs';
 
 import { checkValidation } from '@/lib/checkValidation';
-import { currentDateTime, PaymentCredentialFunction } from '@/lib/helper';
+import { currentDateTime, PaymentCredentialFunction, sendEmail } from '@/lib/helper';
 
 import { EVENT_DATA } from '../Event/EventController';
+
+const path = require('path');
+
+const fs = require('fs');
 
 export async function tapPaymentCheckout(req, res) {
   let BASEURL = ``;
@@ -261,8 +266,30 @@ export async function confirmTapPayment(req, res) {
     await global.knexConnection('ms_reservation').where({ reservation_id }).update({
       is_booked: 'Y',
     });
-    //do booking here
-    return res.redirect(`${success_redirect_url}`);
+    let BASEURL = ``;
+    const [BACKEND_URL] = await global.knexConnection('global_options').where({
+      go_key: 'BASE_URL_BACKEND',
+    });
+    BASEURL = BACKEND_URL.go_value;
+
+    const config = {
+      method: 'get',
+      url: `${BASEURL}/api/createTransation/${reservation_id}`,
+    };
+    const transactionResponse = await axios(config);
+    if (
+      transactionResponse &&
+      transactionResponse.data &&
+      transactionResponse.data.status
+    ) {
+      console.log(transactionResponse.data, 'done');
+
+      return res.redirect(`${success_redirect_url}`);
+    } else {
+      console.log('failed');
+    }
+
+    console.log(res.status);
   } else {
     await global
       .knexConnection('ms_payment_booking_detail')
@@ -273,3 +300,38 @@ export async function confirmTapPayment(req, res) {
     return res.redirect(`${failed_redirect_url}`);
   }
 }
+
+export async function createTransation(req, res) {
+  console.log(req.query, 'create transaction');
+  let emailData = {
+    booking_id: 'test event',
+    booking_date_time: 'test event',
+    event_name: 'test event',
+    cinema_name: 'test event',
+    city_name: 'test event',
+    event_date_time: 'test event',
+    seats: 'Jitu',
+    totalPrice: 'Jitu',
+    currency: 'Jitu',
+  };
+  await sendTicketEmail(emailData);
+  return res.send({
+    status: true,
+    message: 'transaction created',
+  });
+}
+export const sendTicketEmail = async reqbody => {
+  let templetePath =
+    path.join(__dirname, '../../../../') + 'src/modules/templetes/confirmTicket.ejs';
+  console.log(templetePath, 'reqbody');
+
+  let ticketTemplate = fs.readFileSync(templetePath, 'utf8');
+  let emailHtml = await ejs.render(ticketTemplate, {
+    emailData: reqbody.emailData,
+  });
+  await sendEmail('jitendra@gokozo.com', 'Tktfox Ticket', emailHtml, null);
+  return {
+    message: 'Email Sent',
+    status: true,
+  };
+};

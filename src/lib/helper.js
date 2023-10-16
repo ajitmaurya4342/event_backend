@@ -1,4 +1,5 @@
 import moment from 'moment';
+import nodemailer from 'nodemailer';
 
 var momentTimeZone = require('moment-timezone');
 
@@ -68,3 +69,31 @@ export const PaymentCredentialFunction = async ({ cinema_id, pm_id }) => {
     return dataFail;
   }
 };
+const mail = nodemailer.createTransport({
+  host: process.env.SENDINBLUE_HOST,
+  port: process.env.SENDINBLUE_PORT,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SENDINBLUE_USER, // generated ethereal user
+    pass: process.env.SENDINBLUE_PASSWORD, // generated ethereal password
+  },
+});
+
+export function sendEmail(to, subject, body, attachment) {
+  const mailOptions = {
+    from: 'yusuf@simpledigital.in',
+    to: to,
+    subject: subject,
+    html: body,
+  };
+
+  if (attachment) mailOptions.attachments = attachment;
+
+  mail.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log('Error in sendEmail', error);
+    } else {
+      console.log(`Mail Sent ${JSON.stringify(info)}`);
+    }
+  });
+}
