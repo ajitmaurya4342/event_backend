@@ -180,6 +180,7 @@ export async function tapPaymentCheckout(req, res) {
         country_code: country_code,
         is_guest: is_guest,
         created_at: currentDateTimeNew,
+        pm_id: 1,
       };
 
       await global
@@ -309,8 +310,8 @@ export async function createTransation(req, res) {
   let reqbody = { ...req.body, ...req.params };
   const { user_info } = req;
   const isWebsiteUser = req['is_website_user'] || false;
-  const { reservation_id } = reqbody;
-  let checkFields = ['reservation_id'];
+  const { reservation_id, payment_mode_id } = reqbody;
+  let checkFields = ['reservation_id', 'payment_mode_id'];
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
     return res.send(result);
@@ -322,10 +323,25 @@ export async function createTransation(req, res) {
   });
   let getPaymentDetail = [];
   if (isWebsiteUser) {
-    getPaymentDetail = await global.knexCnnection('ms_payment_booking_detail').where({
-      reservation_id,
-      is_booked: 'Y',
-    });
+    getPaymentDetail = await global
+      .knexCnnection('ms_payment_booking_detail')
+      .select(
+        'email',
+        'phone_number',
+        'country_code',
+        'is_booked',
+        'is_guest',
+        'payment_mode_name',
+      )
+      .leftJoin(
+        'ms_payment_mode',
+        'ms_payment_mode.pm_id',
+        'ms_payment_booking_detail.pm_id',
+      )
+      .where({
+        reservation_id,
+        is_booked: 'Y',
+      });
     if (!getPaymentDetail.length) {
       return res.send({
         status: false,
@@ -379,8 +395,14 @@ export async function createTransation(req, res) {
     country: event_data.country_name || null,
     timezone: event_data.tz_name || null,
     currency: event_data.curr_code || null,
-    payment_mode: event_data.payment_mode || null,
-    payment_mode_id: event_data.payment_mode || null,
+    payment_mode_id:
+      getPaymentDetail[0] && getPaymentDetail[0].pm_id
+        ? getPaymentDetail[0].pm_id
+        : null,
+    payment_mode:
+      getPaymentDetail[0] && getPaymentDetail[0].payment_mode_name
+        ? getPaymentDetail[0].payment_mode_name
+        : null,
     booking_type_name: isWebsiteUser ? 'Website' : 'Box Office',
     event_date: moment(event_data.event_sch_array[0].sch_date).format('YYYY-MM-DD'),
     event_time: moment(event_data.event_sch_array[0].sch_time).format('YYYY-MM-DD'),
