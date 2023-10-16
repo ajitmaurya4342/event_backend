@@ -310,8 +310,8 @@ export async function createTransation(req, res) {
   let reqbody = { ...req.body, ...req.params };
   const { user_info } = req;
   const isWebsiteUser = req['is_website_user'] || false;
-  const { reservation_id, payment_mode_id } = reqbody;
-  let checkFields = ['reservation_id', 'payment_mode_id'];
+  const { reservation_id } = reqbody;
+  let checkFields = ['reservation_id'];
   let result = await checkValidation(checkFields, reqbody);
   if (!result.status) {
     return res.send(result);

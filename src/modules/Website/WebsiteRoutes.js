@@ -47,7 +47,11 @@ export function WebsiteRoutes() {
   );
   router.post('/tapPaymentCheckout', checkWebsiteSessionExist, tapPaymentCheckout);
   router.get('/confirmTapPayment', confirmTapPayment);
-  router.post('/createTransation/:reservation_id', createTransation);
+  router.post(
+    '/createTransation/:reservation_id',
+    checkWebsiteSessionExist,
+    createTransation,
+  );
   router.post('/reserveSeats', checkWebsiteSessionExist, addReservationSeat);
   router.get(
     '/getReservationDetails/:reservation_id',
