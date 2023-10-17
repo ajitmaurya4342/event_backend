@@ -499,9 +499,12 @@ export const sendTicketEmail = async reqbody => {
 };
 
 export async function getTransactionList(req, res) {
-  const reqbody = { ...req.query, ...req.body };
+  const reqbody = { ...req.query, ...req.body, ...req.params };
+
+  console.log(reqbody, 'reqbody');
   const booking_id = reqbody.booking_id || null;
   const booking_code = reqbody.booking_code || null;
+
   const user_id = reqbody.user_id || null;
   const limit = req.query.limit ? req.query.limit : 100;
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
