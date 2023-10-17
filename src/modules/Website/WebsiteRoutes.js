@@ -49,7 +49,7 @@ export function WebsiteRoutes() {
   router.get('/confirmTapPayment', confirmTapPayment);
   router.post(
     '/createTransation/:reservation_id',
-    checkWebsiteSessionExist,
+
     createTransation,
   );
   router.post('/reserveSeats', checkWebsiteSessionExist, addReservationSeat);
