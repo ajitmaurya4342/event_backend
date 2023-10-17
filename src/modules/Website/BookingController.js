@@ -404,11 +404,11 @@ export async function createTransation(req, res) {
         : null,
     booking_type_name: isWebsiteUser ? 'Website' : 'Box Office',
     event_date: event_data.event_sch_array
-      ? moment(event_data.event_sch_array[0].sch_date).format('YYYY-MM-DD')
+      ? event_data.event_sch_array[0].sch_date
       : null,
 
     event_time: event_data.event_sch_array
-      ? moment(event_data.event_sch_array[0].sch_time).format('YYYY-MM-DD')
+      ? event_data.event_sch_array[0].sch_time
       : null,
     booking_date_time: currentDateTimeNew,
     created_by: (user_info && user_info.user_id) || null,
@@ -421,9 +421,9 @@ export async function createTransation(req, res) {
   let seatNames = [];
   let totalAmount = 0;
   getReservationDetail.map(z => {
-    seatNames.push(z.seat_name);
+    seatNames.push(z.seat_type + '-' + z.seat_name);
     // @ts-ignore
-    totalAmount += parseFloat(z.seat_price).toFixed(3);
+    totalAmount += parseFloat(z.seat_price);
     let obj = {
       booking_id: insertBookingId[0],
       seat_name: z.seat_name,
@@ -448,15 +448,14 @@ export async function createTransation(req, res) {
     booking_id: booking_code,
     booking_date_time: insertObj.booking_date_time,
     event_name: insertObj.event_name,
+    customer_email: insertObj.c_email,
     cinema_name: insertObj.city_name,
     city_name: insertObj.city_name,
     event_date_time: insertObj.event_date
-      ? moment(insertObj.event_date + ' ' + insertObj.event_time).format(
-          'YYYY-MM-DD HH:mm',
-        )
+      ? moment(insertObj.event_date + ' ' + insertObj.event_time).format('LLL')
       : null,
     seats: seatNames.join(', '),
-    totalPrice: totalAmount,
+    totalPrice: totalAmount.toFixed(3),
     currency: insertObj.currency,
   };
 
