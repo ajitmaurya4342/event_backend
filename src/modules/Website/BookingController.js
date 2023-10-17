@@ -323,7 +323,7 @@ export async function createTransation(req, res) {
   let getPaymentDetail = [];
   if (isWebsiteUser) {
     getPaymentDetail = await global
-      .knexCnnection('ms_payment_booking_detail')
+      .knexConnection('ms_payment_booking_detail')
       .select(
         'email',
         'phone_number',
@@ -488,7 +488,7 @@ export const sendTicketEmail = async reqbody => {
   let emailHtml = await ejs.render(ticketTemplate, {
     emailData,
   });
-  sendEmail('jitendra@gokozo.com', 'Tktfox Ticket', emailHtml, null);
+  sendEmail(emailData.customer_email, 'Tktfox Ticket', emailHtml, null);
   return {
     message: 'Email Sent',
     status: true,
