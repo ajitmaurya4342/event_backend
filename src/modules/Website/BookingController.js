@@ -4,6 +4,7 @@ import moment from 'moment';
 
 import { checkValidation } from '@/lib/checkValidation';
 import { currentDateTime, PaymentCredentialFunction, sendEmail } from '@/lib/helper';
+import { pagination } from '@/lib/pagination';
 
 import { EVENT_DATA } from '../Event/EventController';
 
@@ -468,6 +469,8 @@ export async function createTransation(req, res) {
     .where({ booking_id: insertBookingId[0] })
     .update({
       booking_code,
+      seat_names: seatNames.join(', '),
+      total_price: totalAmount.toFixed(3),
     });
 
   await sendTicketEmail(emailData);
@@ -494,3 +497,36 @@ export const sendTicketEmail = async reqbody => {
     status: true,
   };
 };
+
+export async function getTransactionList(req, res) {
+  const reqbody = { ...req.query, ...req.body };
+  const booking_id = reqbody.booking_id || null;
+  const booking_code = reqbody.booking_code || null;
+  const user_id = reqbody.user_id || null;
+  const limit = req.query.limit ? req.query.limit : 100;
+  const currentPage = req.query.currentPage ? req.query.currentPage : 1;
+
+  const TransactionList = await global
+    .knexConnection('ms_booking')
+    .where(builder => {
+      if (booking_id) {
+        builder.where('booking_id', '=', booking_id);
+      }
+      if (booking_code) {
+        builder.where('booking_code', '=', booking_code);
+      }
+      if (req.query.search) {
+        builder.whereRaw(
+          ` concat_ws(' ',booking_code,c_email,cinema_name,event_name) like '%${req.query.search}%'`,
+        );
+      }
+    })
+    .orderBy('booking_id', 'desc')
+    .paginate(pagination(limit, currentPage));
+
+  return res.send({
+    message: 'Transaction List',
+    status: true,
+    Records: TransactionList,
+  });
+}
