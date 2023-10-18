@@ -57,6 +57,7 @@ export const addReservationSeat = async (req, res) => {
       is_reserved: 'Y',
       seat_name: seatsObj.seatRowName + seatsObj.seatColName,
       seat_group_id: seatsObj.seatGroupId,
+      event_sch_id: event_sch_id,
     });
 
     if (checkAlready.length) {
