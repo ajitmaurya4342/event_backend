@@ -249,58 +249,71 @@ export async function confirmTapPayment(req, res) {
     },
   };
 
-  // @ts-ignore
-  let getPaymentStatus = await axios.request(config2);
-  console.log(getPaymentStatus, 'payment response');
-  if (
-    getPaymentStatus.data.status == 'CAPTURED' ||
-    getPaymentStatus.data.status == 'captured'
-  ) {
-    console.log(getPaymentStatus.data.status, 'getPaymentStatus.data.status');
-
-    await global
-      .knexConnection('ms_payment_booking_detail')
-      .where({ reservation_id })
-      .update({
-        is_booked: 'Y',
-        payment_capture: JSON.stringify(getPaymentStatus.data),
-      });
-
-    let BASEURL = ``;
-    const [BACKEND_URL] = await global.knexConnection('global_options').where({
-      go_key: 'BASE_URL_BACKEND',
-    });
-    BASEURL = BACKEND_URL.go_value;
-
-    const config = {
-      method: 'post',
-      url: `${BASEURL}/api/createTransation/${reservation_id}`,
-      headers: {
-        Authorization: event_token,
-      },
-    };
-    const transactionResponse = await axios(config);
-
+  try {
+    // @ts-ignore
+    let getPaymentStatus = await axios.request(config2);
+    console.log(getPaymentStatus, 'payment response');
     if (
-      transactionResponse &&
-      transactionResponse.data &&
-      transactionResponse.data.status
+      getPaymentStatus.data.status == 'CAPTURED' ||
+      getPaymentStatus.data.status == 'captured'
     ) {
-      console.log(transactionResponse.data, 'done');
-      return res.redirect(
-        `${success_redirect_url}/${transactionResponse.data.booking_code}`,
-      );
-    } else {
-      console.log('failed');
-    }
+      console.log(getPaymentStatus.data.status, 'getPaymentStatus.data.status');
 
-    console.log(res.status);
-  } else {
+      await global
+        .knexConnection('ms_payment_booking_detail')
+        .where({ reservation_id })
+        .update({
+          is_booked: 'Y',
+          payment_capture: JSON.stringify(getPaymentStatus.data),
+        });
+
+      let BASEURL = ``;
+      const [BACKEND_URL] = await global.knexConnection('global_options').where({
+        go_key: 'BASE_URL_BACKEND',
+      });
+      BASEURL = BACKEND_URL.go_value;
+
+      const config = {
+        method: 'post',
+        url: `${BASEURL}/api/createTransation/${reservation_id}`,
+        headers: {
+          Authorization: event_token,
+        },
+      };
+      const transactionResponse = await axios(config);
+
+      if (
+        transactionResponse &&
+        transactionResponse.data &&
+        transactionResponse.data.status
+      ) {
+        console.log(transactionResponse.data, 'done');
+        return res.redirect(
+          `${success_redirect_url}/${transactionResponse.data.booking_code}`,
+        );
+      } else {
+        console.log('failed');
+      }
+
+      console.log(res.status);
+    } else {
+      await global
+        .knexConnection('ms_payment_booking_detail')
+        .where({ reservation_id })
+        .update({
+          payment_capture: JSON.stringify({
+            ...getPaymentStatus.data,
+            queryData: req.query,
+          }),
+        });
+      return res.redirect(`${failed_redirect_url}`);
+    }
+  } catch (error) {
     await global
       .knexConnection('ms_payment_booking_detail')
       .where({ reservation_id })
       .update({
-        payment_capture: JSON.stringify(getPaymentStatus.data),
+        payment_capture: JSON.stringify(req.query),
       });
     return res.redirect(`${failed_redirect_url}`);
   }
