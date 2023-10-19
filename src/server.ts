@@ -21,16 +21,36 @@ Promise.all([connectToDatabase(), connectToCinematicDatabase(), connectToRedis()
     global.knexConnection = db;
     global.__base = __dirname;
     const ops: AppRouterOptions = { db, mainDb, app, redis };
+
+    // load middlewares here
+    app.use(cacheResponse);
+    app.use(setRequestVariables);
+
+    const globalOptions = await global.knexConnection('global_options');
+    const globalOptionsPrivate = await global.knexConnection('global_options_private');
+
+    const globalOptionsMap: Record<string, string> = {};
+    const globalOptionsPrivateMap: Record<string, string> = {};
+
+    globalOptions.forEach(row => {
+      globalOptionsMap[row.go_key] = row.go_value;
+    });
+
+    globalOptionsPrivate.forEach(row => {
+      globalOptionsPrivateMap[row.go_key] = row.go_value;
+    });
+
+    // req.globalOptions = globalOptionsMap;
+    // req.globalOptionsPrivate = globalOptionsPrivateMap;
+    global.globalOptions = globalOptionsMap;
+    global.globalOptionsPrivate = globalOptionsPrivate;
+
     setInterval(
       () => {
         releaseSeats().then(res => {});
       },
       1000 * 60 * 2,
     );
-
-    // load middlewares here
-    app.use(cacheResponse);
-    app.use(setRequestVariables);
 
     // loading root router, load other routes inside root router
     app.use(getRootRouter(ops));

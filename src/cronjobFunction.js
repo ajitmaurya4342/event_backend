@@ -17,7 +17,7 @@ export const releaseSeats = async () => {
     for (let allreserveSeats of get_all_active_reserve_data) {
       let formatName = 'YYYY-MM-DD HH:mm';
       let current_date_time = currentDateTime(
-        allreserveSeats.created_at,
+        null,
         formatName,
         allreserveSeats.timezone_name,
       );
@@ -32,7 +32,7 @@ export const releaseSeats = async () => {
   if (releaseSeatId.length) {
     let updateAll = await global
       .knexConnection('ms_reservation')
-      .where({
+      .update({
         is_reserved: 'N',
       })
       .whereIn('r_id', releaseSeatId);
