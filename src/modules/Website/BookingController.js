@@ -4,6 +4,7 @@ import moment from 'moment';
 
 import { checkValidation } from '@/lib/checkValidation';
 import { currentDateTime, PaymentCredentialFunction, sendEmail } from '@/lib/helper';
+import { createQRCode } from '@/lib/QrcodeGenerator';
 
 import { EVENT_DATA } from '../Event/EventController';
 
@@ -440,6 +441,7 @@ export async function createTransation(req, res) {
     : insertBookingId[0];
   booking_code += booking_number_new;
 
+  const qrcode_data = await createQRCode('https://ajit', 'buf');
   let emailData = {
     booking_id: booking_code,
     booking_date_time: insertObj.booking_date_time,
@@ -452,6 +454,14 @@ export async function createTransation(req, res) {
     seats: seatNames.join(', '),
     totalPrice: totalAmount,
     currency: insertObj.currency,
+    attachments: [
+      {
+        filename: 'qrcode.png',
+        content: qrcode_data,
+        // encoding: 'base64',
+        cid: 'qrcode',
+      },
+    ],
   };
 
   await global.knexConnection('ms_reservation').where({ reservation_id }).update({
@@ -473,15 +483,17 @@ export async function createTransation(req, res) {
   });
 }
 export const sendTicketEmail = async reqbody => {
-  let templetePath =
-    path.join(__dirname, '../../../../') + 'src/modules/templetes/confirmTicket.ejs';
-  console.log(templetePath, 'reqbody');
+  let templetePath = global.__base + '/modules/templetes/confirmTicket.ejs';
 
   let ticketTemplate = fs.readFileSync(templetePath, 'utf8');
   let emailHtml = await ejs.render(ticketTemplate, {
     emailData: reqbody.emailData,
   });
-  await sendEmail('jitendra@gokozo.com', 'Tktfox Ticket', emailHtml, null);
+  let attachment = null;
+  if (reqbody.emailData && reqbody.emailData.attachments) {
+    attachment = [...reqbody.emailData.attachments];
+  }
+  await sendEmail('raj.gupta3216@gmail.com', 'Tktfox Ticket', emailHtml, attachment);
   return {
     message: 'Email Sent',
     status: true,
