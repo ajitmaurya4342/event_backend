@@ -336,6 +336,7 @@ export async function createTransation(req, res) {
     is_reserved: 'Y',
   });
   let getPaymentDetail = [];
+  let qrUrl = '';
   if (isWebsiteUser) {
     getPaymentDetail = await global
       .knexConnection('ms_payment_booking_detail')
@@ -382,7 +383,7 @@ export async function createTransation(req, res) {
   });
 
   let event_data = event_data_all.Records[0];
-
+  qrUrl = getPaymentDetail[0].success_frontend_url;
   let insertObj = {
     event_id: getReservationDetail[0].event_id,
     schedule_id: getReservationDetail[0].event_sch_id,
@@ -459,7 +460,7 @@ export async function createTransation(req, res) {
     : insertBookingId[0];
   booking_code += booking_number_new;
 
-  const qrcode_data = await createQRCode('https://ajit', 'buf');
+  const qrcode_data = await createQRCode(qrUrl + '/' + booking_code, 'buf');
   let emailData = {
     booking_id: booking_code,
     booking_date_time: insertObj.booking_date_time,
@@ -517,7 +518,7 @@ export const sendTicketEmail = async reqbody => {
   if (emailData && emailData.attachments) {
     attachment = [...emailData.attachments];
   }
-  await sendEmail('raj.gupta3216@gmail.com', 'Tktfox Ticket', emailHtml, attachment);
+  await sendEmail(emailData.customer_email, 'Tktfox Ticket', emailHtml, attachment);
   return {
     message: 'Email Sent',
     status: true,
