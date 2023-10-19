@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "reporting-server",
   "scripts": {
-    "start": "npm run build:tsc && cross-env NODE_ENV=production node dist/src/index.js",
+    "start": "cross-env NODE_ENV=development nodemon",
     "start:tsc": "npm run build:tsc && cross-env NODE_ENV=production node dist/src/index.js",
     "start:swc": "npm run build:swc && cross-env NODE_ENV=production node dist/src/index.js",
     "dev": "cross-env NODE_ENV=development nodemon",
