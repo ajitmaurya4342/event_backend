@@ -347,6 +347,7 @@ export async function createTransation(req, res) {
         'is_booked',
         'is_guest',
         'payment_mode_name',
+        'success_frontend_url',
       )
       .leftJoin(
         'ms_payment_mode',
