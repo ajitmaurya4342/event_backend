@@ -348,6 +348,7 @@ export async function createTransation(req, res) {
         'is_guest',
         'payment_mode_name',
         'success_frontend_url',
+        'failed_frontend_url',
       )
       .leftJoin(
         'ms_payment_mode',
@@ -367,10 +368,11 @@ export async function createTransation(req, res) {
   }
 
   if (!getReservationDetail.length) {
-    return res.send({
-      status: false,
-      Records: `Seat Released or Booked`,
-    });
+    return res.redirect(`${getPaymentDetail[0].failed_frontend_url}`);
+    // return res.send({
+    //   status: false,
+    //   Records: `Seat Released or Booked`,
+    // });
   }
   let currentDateTimeNew = currentDateTime(
     null,
