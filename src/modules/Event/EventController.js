@@ -225,13 +225,13 @@ export async function addEditEvent(req, res) {
       }
     }
 
-    const deleteQuery = await global
-      .knexConnection('event_schedule')
-      .where({
-        event_id: insert_event_id,
-        sch_is_active: 'N',
-      })
-      .del();
+    // const deleteQuery = await global
+    //   .knexConnection('event_schedule')
+    //   .where({
+    //     event_id: insert_event_id,
+    //     sch_is_active: 'N',
+    //   })
+    //   .del();
 
     return res.send({
       status: true,
