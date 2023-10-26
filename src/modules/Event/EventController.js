@@ -294,7 +294,7 @@ export const ExtraDetail = async ({
   if (isSchduleArrayRequired) {
     let filters = ``;
     if (isWebsiteUser) {
-      filters = ` concat(sch_date,' ',sch_time)>='${currentDateTimeNew}'`;
+      filters = ` concat(sch_date,' ',sch_time)>='${currentDateTimeNew}' and  sch_is_active='Y'`;
     }
     let schedule_array = await global
       .knexConnection('event_schedule')
@@ -305,7 +305,6 @@ export const ExtraDetail = async ({
       )
       .where({
         event_id,
-        sch_is_active: 'Y',
       })
       .whereRaw(filters)
       .where(builder => {
