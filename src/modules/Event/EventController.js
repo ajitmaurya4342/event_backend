@@ -195,14 +195,14 @@ export async function addEditEvent(req, res) {
           schedule_insert_id = insert_schedule[0];
         }
         //
-        if (sch_array.sch_is_active == 'N') {
-          await global
-            .knexConnection('event_sch_seat_type')
-            .where({
-              event_sch_id: schedule_insert_id,
-            })
-            .del();
-        }
+        // if (sch_array.sch_is_active == 'N') {
+        //   await global
+        //     .knexConnection('event_sch_seat_type')
+        //     .where({
+        //       event_sch_id: schedule_insert_id,
+        //     })
+        //     .del();
+        // }
 
         if (sch_array.sch_seat_type_array && sch_array.sch_seat_type_array.length) {
           await global
