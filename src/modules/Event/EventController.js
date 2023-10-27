@@ -195,23 +195,23 @@ export async function addEditEvent(req, res) {
           schedule_insert_id = insert_schedule[0];
         }
         //
-        if (sch_array.sch_is_active == 'N') {
+        // if (sch_array.sch_is_active == 'N') {
+        //   await global
+        //     .knexConnection('event_sch_seat_type')
+        //     .where({
+        //       event_sch_id: schedule_insert_id,
+        //     })
+        //     .del();
+        // }
+
+        if (sch_array.sch_seat_type_array && sch_array.sch_seat_type_array.length) {
           await global
             .knexConnection('event_sch_seat_type')
             .where({
               event_sch_id: schedule_insert_id,
             })
             .del();
-        }
-
-        if (sch_array.sch_seat_type_array && sch_array.sch_seat_type_array.length) {
           for (let seatT of sch_array.sch_seat_type_array) {
-            await global
-              .knexConnection('event_sch_seat_type')
-              .where({
-                event_sch_id: schedule_insert_id,
-              })
-              .del();
             let objSeat = {
               event_id: insert_event_id,
               event_sch_id: schedule_insert_id || null,
@@ -225,13 +225,13 @@ export async function addEditEvent(req, res) {
       }
     }
 
-    const deleteQuery = await global
-      .knexConnection('event_schedule')
-      .where({
-        event_id: insert_event_id,
-        sch_is_active: 'N',
-      })
-      .del();
+    // const deleteQuery = await global
+    //   .knexConnection('event_schedule')
+    //   .where({
+    //     event_id: insert_event_id,
+    //     sch_is_active: 'N',
+    //   })
+    //   .del();
 
     return res.send({
       status: true,
@@ -294,7 +294,7 @@ export const ExtraDetail = async ({
   if (isSchduleArrayRequired) {
     let filters = ``;
     if (isWebsiteUser) {
-      filters = ` concat(sch_date,' ',sch_time)>='${currentDateTimeNew}'`;
+      filters = ` concat(sch_date,' ',sch_time)>='${currentDateTimeNew}' and  sch_is_active='Y'`;
     }
     let schedule_array = await global
       .knexConnection('event_schedule')
@@ -305,7 +305,6 @@ export const ExtraDetail = async ({
       )
       .where({
         event_id,
-        sch_is_active: 'Y',
       })
       .whereRaw(filters)
       .where(builder => {

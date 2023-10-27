@@ -392,9 +392,10 @@
                                                                   style="margin-top:0px; margin-bottom: 8px;text-align:center;color: #008800;">
                                                                   Your
                                                                   booking is confirmed!
+                                                                
                                                                </h2>
                                                                </h2>
-                                                               <p style="text-align:center;">Booking ID: [BookingID]</p>
+                                                               <p style="text-align:center;">Booking ID: <%= emailData.booking_id %></p>
                                                             </div>
                                                          </td>
                                                       </tr>
@@ -450,6 +451,10 @@
                                                                                        style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif; vertical-align: top; line-height: 1; padding: 15px 0 20px 0; border-bottom: 1px dashed #D8D8D8; font-size: 14px;"
                                                                                        valign="top"> <a href=""
                                                                                           style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif;">
+
+
+                                                                                          <img  src="cid:qrcode"  style="display: block; width: 80px;"
+                                                                                          width="80" alt="" />
                                                                                           <!-- <img
                                                                                              src="images/products//7_0.png"
                                                                                              class="products-gallery-image"
@@ -463,12 +468,11 @@
                                                                                           style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif; width: 100%; margin-bottom: 20px;">
                                                                                           <h3
                                                                                              style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif; color: #333; font-weight: bold; line-height: 20px; margin-top: 0;margin-bottom: 10px;">
-                                                                                             [Event Name] </h3>
+                                                                                             <%= emailData.event_name %> </h3>
                                                                                           <p
                                                                                              style="color: #3f3f3f;margin-bottom:10px">
                                                                                              Seats:
-                                                                                             [Seat1, Seat2,
-                                                                                             Seat3]</p>
+                                                                                             <%= emailData.seats %></p>
                                                                                        </div>
                                                                                        <!-- <div
                                                                                           style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif;">
@@ -500,7 +504,7 @@
                                                                                        style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif;">
                                                                                        <h3
                                                                                           style="color:#000000;font-weight:bold;font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif;">
-                                                                                          99$</h3>
+                                                                                          <%= emailData.totalPrice %> <%= emailData.currency %></h3>
                                                                                     </td>
                                                                                  </tr>
                                                                               </table>
@@ -584,7 +588,7 @@
                                                                                     style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif; font-size: 14px;">
                                                                                     <div
                                                                                        style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif;">
-                                                                                       [Booking Date & Time]]</div>
+                                                                                       <%= emailData.booking_date_time %></div>
                                                                                  </div>
                                                                               </td>
                                                                            </tr>
@@ -620,7 +624,7 @@
                                                                                     style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif; font-size: 14px;">
                                                                                     <div
                                                                                        style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif;">
-                                                                                       PayPal </div>
+                                                                                       - </div>
                                                                                  </div>
                                                                               </td>
                                                                            </tr>
@@ -681,10 +685,8 @@
                                                                                     See you there on</div>
                                                                                  <h2
                                                                                     style="font-family: Open Sans, Helvetica, Tahoma, Arial, sans-serif; font-size: 20px;text-align:center;font-weight:bold;">
-                                                                                    <span style="color: #fe3b1f;">12
-                                                                                       November 2023,</span>
-                                                                                    <span
-                                                                                       style="color: #fe3b1f;">16:00</span>
+                                                                                    <span style="color: #fe3b1f;"><%= emailData.event_date_time %></span>
+                                                                                    
                                                                                  </h2>
                                                                               </td>
                                                                            </tr>

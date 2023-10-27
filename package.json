@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "reporting-server",
   "scripts": {
-    "start": "npm run build:tsc && cross-env NODE_ENV=production node dist/src/index.js",
+    "start": "cross-env NODE_ENV=development nodemon",
     "start:tsc": "npm run build:tsc && cross-env NODE_ENV=production node dist/src/index.js",
     "start:swc": "npm run build:swc && cross-env NODE_ENV=production node dist/src/index.js",
     "dev": "cross-env NODE_ENV=development nodemon",
@@ -57,6 +57,7 @@
     "pino-http": "^8.3.3",
     "pino-http-print": "^3.1.0",
     "pino-pretty": "^10.2.0",
+    "qrcode": "^1.5.3",
     "type-fest": "^4.0.0",
     "uuid": "^3.3.2",
     "winston": "^3.10.0"

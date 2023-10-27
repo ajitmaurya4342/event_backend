@@ -8,6 +8,7 @@ import { CustomerRoutes } from './modules/Customer/CustomerRoutes';
 import { EventRoutes } from './modules/Event/EventRoutes';
 import { GuestRoutes } from './modules/Guest/GuestRoutes';
 import { MasterRoutes } from './modules/Master/MasterRoutes';
+import { ReportRoutes } from './modules/Report/ReportRoutes';
 import { UserRoutes } from './modules/User/UserRoutes';
 import { WebsiteRoutes } from './modules/Website/WebsiteRoutes';
 
@@ -24,6 +25,7 @@ export function getRootRouter(ops: AppRouterOptions) {
   router.use('/admin', MasterRoutes());
   router.use('/admin', CinemaRoutes());
   router.use('/admin', EventRoutes());
+  router.use('/admin', ReportRoutes());
   router.use('/api', WebsiteRoutes());
 
   return router;

@@ -50,6 +50,7 @@ export async function addEditGuest(req, res) {
     obj['guest_unique_id'] = guest_id_new;
   } else {
     obj['guest_unique_id'] = uuidv4();
+    // obj['guest_id'] = obj['guest_unique_id'];
     obj['guest_unique_id'] = obj['guest_unique_id'];
     await global.knexConnection('ms_guest_customers').insert(obj);
   }

@@ -13,6 +13,7 @@ import {
 import {
   confirmTapPayment,
   createTransation,
+  getTransactionList,
   tapPaymentCheckout,
 } from '@/modules/Website/BookingController';
 
@@ -47,7 +48,11 @@ export function WebsiteRoutes() {
   );
   router.post('/tapPaymentCheckout', checkWebsiteSessionExist, tapPaymentCheckout);
   router.get('/confirmTapPayment', confirmTapPayment);
-  router.get('/createTransation/:reservation_id', createTransation);
+  router.post(
+    '/createTransation/:reservation_id',
+    checkWebsiteSessionExist,
+    createTransation,
+  );
   router.post('/reserveSeats', checkWebsiteSessionExist, addReservationSeat);
   router.get(
     '/getReservationDetails/:reservation_id',
@@ -67,5 +72,10 @@ export function WebsiteRoutes() {
   );
   router.post('/guestCheckout', checkWebsiteSessionExist, addEditGuest);
   router.post('/customerSubscribe', checkWebsiteSessionExist, addSubscriber);
+  router.get(
+    '/getTransactionList/:booking_code',
+    checkWebsiteSessionExist,
+    getTransactionList,
+  );
   return router;
 }

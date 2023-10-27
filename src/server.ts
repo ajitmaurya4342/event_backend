@@ -10,6 +10,9 @@ import { setRequestVariables } from '@/middlewares/setRequestVariables';
 import { getRootRouter } from '@/router';
 import { logger, setupGracefulShutdown } from '@/utils/utils';
 
+import { releaseSeats } from './cronjobFunction';
+import { checkLogin } from './modules/Login/LoginController';
+
 const port = process.env.PORT;
 export const server = createServer(app);
 
@@ -22,6 +25,32 @@ Promise.all([connectToDatabase(), connectToCinematicDatabase(), connectToRedis()
     // load middlewares here
     app.use(cacheResponse);
     app.use(setRequestVariables);
+
+    const globalOptions = await global.knexConnection('global_options');
+    const globalOptionsPrivate = await global.knexConnection('global_options_private');
+
+    const globalOptionsMap: Record<string, string> = {};
+    const globalOptionsPrivateMap: Record<string, string> = {};
+
+    globalOptions.forEach(row => {
+      globalOptionsMap[row.go_key] = row.go_value;
+    });
+
+    globalOptionsPrivate.forEach(row => {
+      globalOptionsPrivateMap[row.go_key] = row.go_value;
+    });
+
+    // req.globalOptions = globalOptionsMap;
+    // req.globalOptionsPrivate = globalOptionsPrivateMap;
+    global.globalOptions = globalOptionsMap;
+    global.globalOptionsPrivate = globalOptionsPrivate;
+
+    setInterval(
+      () => {
+        releaseSeats().then(res => {});
+      },
+      1000 * 60 * 2,
+    );
 
     // loading root router, load other routes inside root router
     app.use(getRootRouter(ops));
