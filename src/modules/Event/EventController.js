@@ -319,9 +319,17 @@ export const ExtraDetail = async ({
     for (let obj of schedule_array) {
       obj['sch_seat_type_array'] = [];
       obj['sch_date'] = currentDateTime(obj['sch_date'], 'YYYY-MM-DD');
-      let seatType = await global.knexConnection('event_sch_seat_type').where({
-        event_sch_id: obj.event_sch_id,
-      });
+      let seatType = await global
+        .knexConnection('event_sch_seat_type')
+        .select('event_sch_seat_type.*', 'ms_seat_class_type.seat_class_name')
+        .leftJoin(
+          'ms_seat_class_type',
+          'ms_seat_class_type.sct_id',
+          'event_sch_seat_type.sct_id',
+        )
+        .where({
+          event_sch_id: obj.event_sch_id,
+        });
       obj['sch_seat_type_array'] = [...seatType];
       event_sch_array.push(obj);
     }
