@@ -320,7 +320,6 @@ export async function confirmTapPayment(req, res) {
 }
 
 export async function createTransation(req, res) {
-  console.log(req.query, 'create transaction');
   let reqbody = { ...req.body, ...req.params };
   const { user_info } = req;
   const isWebsiteUser = req['is_website_user'] || false;
@@ -449,6 +448,7 @@ export async function createTransation(req, res) {
       seat_type: z.seat_type,
       seat_group_id: z.seat_group_id,
       seat_price: z.seat_price,
+      no_of_seats: z.no_of_seats,
     };
     transaction_array.push({ ...obj });
   });

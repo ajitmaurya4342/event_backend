@@ -25,6 +25,7 @@ import {
 import { addEditGuest, addSubscriber } from '../Guest/GuestController';
 import {
   addReservationSeat,
+  addReservationSeatWithoutSeatlayout,
   allReserveSeatBySchedule,
   getReservationSeat,
   releaseSeats,
@@ -54,6 +55,11 @@ export function WebsiteRoutes() {
     createTransation,
   );
   router.post('/reserveSeats', checkWebsiteSessionExist, addReservationSeat);
+  router.post(
+    '/reserveSeats-no-sl',
+    checkWebsiteSessionExist,
+    addReservationSeatWithoutSeatlayout,
+  );
   router.get(
     '/getReservationDetails/:reservation_id',
     checkWebsiteSessionExist,
