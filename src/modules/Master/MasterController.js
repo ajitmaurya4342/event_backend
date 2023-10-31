@@ -672,8 +672,19 @@ export async function getSeatLayoutList(req, res) {
   const currentPage = req.query.currentPage ? req.query.currentPage : 1;
   let seat_layout_select = ['sl_id', 'seat_layout_name', 'seat_count', 'price_data'];
   if (sl_id) {
+    const cachedLayout = eventCache.get(sl_id);
+    if (cachedLayout) {
+      return res.send({
+        message: 'Seat Layout List from cache',
+        status: true,
+        Records: cachedLayout,
+      });
+    }
     seat_layout_select.push('seat_layout_data');
   }
+
+  console.log('jitu here');
+  //return;
   const SeatLayoutList = await global
     .knexConnection('ms_seat_layout')
     .select(seat_layout_select)
@@ -694,6 +705,7 @@ export async function getSeatLayoutList(req, res) {
     SeatLayoutList.data.map(z => {
       z['seat_layout_data'] = z.seat_layout_data;
     });
+    eventCache.set(sl_id, SeatLayoutList, 100000);
   }
 
   return res.send({
