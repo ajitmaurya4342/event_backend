@@ -43,14 +43,13 @@ const checkSeatsAvailableWithoutSL = async ({ event_sch_id, seatLayoutData }) =>
     .groupBy('seat_type_id');
 
   let seatTypeData = await global
-    .knexConnection('event_sch_seat_type', 'sct_id')
-    .select('available_seats')
+    .knexConnection('event_sch_seat_type')
+    .select('available_seats', 'sct_id')
     .where({
       event_sch_id,
     });
-
+  let createNewArray = [];
   if (checkBookedSeats.length && seatTypeData.length) {
-    let createNewArray = [];
     seatTypeData.map(z => {
       let findIndexNew = checkBookedSeats.findIndex(_bookSeats => {
         return _bookSeats.seat_type_id == z.sct_id;
@@ -64,17 +63,19 @@ const checkSeatsAvailableWithoutSL = async ({ event_sch_id, seatLayoutData }) =>
           parseInt(obj.available_seats) -
           parseInt(checkBookedSeats[findIndexNew].total_seats);
       }
-      createNewArray.push(createNewArray);
+      createNewArray.push(obj);
     });
 
     seatLayoutData.map(_slD => {
       if (seatCheck.status) {
         let checkData = createNewArray.filter(z => {
+          console.log({ z, _slD });
           return (
-            z.seat_type_id == _slD.seatTypeId &&
+            z.seat_type_id == _slD.sct_id &&
             parseInt(_slD.noOfSeats) <= parseInt(z.available_seats)
           );
         });
+
         if (!checkData.length) {
           seatCheck.status = false;
           seatCheck.records.push(_slD);
@@ -82,6 +83,7 @@ const checkSeatsAvailableWithoutSL = async ({ event_sch_id, seatLayoutData }) =>
       }
     });
   }
+  console.log({ checkBookedSeats, seatTypeData, createNewArray });
 
   return seatCheck;
 };
@@ -94,8 +96,8 @@ const checkPriceDataWithoutSL = (seatLayoutData, price_array) => {
   seatLayoutData.map(seatData => {
     let checkPrice = price_array.filter(priceData => {
       return (
-        String(priceData.sct_id) == String(seatData.seatTypeId) &&
-        String(seatData.seatPrice) == String(priceData.price_per_seat)
+        String(priceData.sct_id) == String(seatData.sct_id) &&
+        String(seatData.price_per_seat) == String(priceData.price_per_seat)
       );
     });
     if (checkPrice.length == 0 && !price_data.status) {
@@ -256,17 +258,17 @@ export const addReservationSeatWithoutSeatlayout = async (req, res) => {
 
   let arrayData = [];
   for (let seatsObj of selectedSeatsArray) {
-    let checkFieldsAr = ['seatTypeId', 'seatPrice', 'seatType', 'noOfSeats'];
+    let checkFieldsAr = ['sct_id', 'price_per_seat', 'seat_class_name', 'noOfSeats'];
     let result2 = await checkValidation(checkFieldsAr, seatsObj);
     if (!result2.status) {
       return res.send(result2);
     }
 
     arrayData.push({
-      seat_type_id: seatsObj.seatTypeId,
-      seat_type: seatsObj.seatType,
+      seat_type_id: seatsObj.sct_id,
+      seat_type: seatsObj.seat_class_name,
       no_of_seats: seatsObj.noOfSeats,
-      seat_price: seatsObj.seatPrice,
+      seat_price: seatsObj.price_per_seat,
     });
   }
 
@@ -540,7 +542,15 @@ export const allReserveSeatBySchedule = async (req, res) => {
 
   let getReservationDetail = await global
     .knexConnection('ms_reservation')
-    .select(['seat_name', 'seat_type', 'seat_group_id', 'column_name', 'row_name'])
+    .select([
+      'seat_name',
+      'seat_type',
+      'seat_group_id',
+      'column_name',
+      'row_name',
+      'no_of_seats',
+      'seat_type_id',
+    ])
     .where({
       event_sch_id,
       is_reserved: 'Y',
