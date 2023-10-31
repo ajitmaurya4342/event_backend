@@ -72,7 +72,7 @@ const checkSeatsAvailableWithoutSL = async ({ event_sch_id, seatLayoutData }) =>
         let checkData = createNewArray.filter(z => {
           return (
             z.seat_type_id == _slD.seatTypeId &&
-            parseInt(_slD.no_of_seats) <= parseInt(z.available_seats)
+            parseInt(_slD.noOfSeats) <= parseInt(z.available_seats)
           );
         });
         if (!checkData.length) {
