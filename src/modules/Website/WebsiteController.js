@@ -28,6 +28,64 @@ const checkPriceData = (seatLayoutData, price_array) => {
   return price_data;
 };
 
+const checkSeatsAvailableWithoutSL = async ({ event_sch_id, seatLayoutData }) => {
+  let seatCheck = {
+    status: true,
+    records: [],
+  };
+  let checkBookedSeats = await global
+    .knexConnection('ms_reservation')
+    .select(global.knexConnection.raw(`seat_type_id,sum(no_of_seats) as total_seats`))
+    .where({
+      event_sch_id,
+      is_reserved: 'Y',
+    })
+    .groupBy('seat_type_id');
+
+  let seatTypeData = await global
+    .knexConnection('event_sch_seat_type', 'sct_id')
+    .select('available_seats')
+    .where({
+      event_sch_id,
+    });
+
+  if (checkBookedSeats.length && seatTypeData.length) {
+    let createNewArray = [];
+    seatTypeData.map(z => {
+      let findIndexNew = checkBookedSeats.findIndex(_bookSeats => {
+        return _bookSeats.seat_type_id == z.sct_id;
+      });
+      let obj = {
+        available_seats: z.available_seats,
+        seat_type_id: z.sct_id,
+      };
+      if (findIndexNew >= 0) {
+        obj.available_seats =
+          parseFloat(obj.available_seats) -
+          parseFloat(checkBookedSeats[findIndexNew].total_seats);
+      }
+      createNewArray.push(createNewArray);
+    });
+
+    seatLayoutData.map(_slD => {
+      if (seatCheck.status) {
+        let checkData = createNewArray.filter(z => {
+          return (
+            z.seat_type_id == _slD.seatTypeId &&
+            parseInt(_slD.no_of_seats) <= parseInt(z.available_seats)
+          );
+        });
+        if (!checkData.length) {
+          seatCheck.status = false;
+          seatCheck.records.push(_slD);
+        }
+      }
+    });
+  }
+
+  return seatCheck;
+};
+
 const checkPriceDataWithoutSL = (seatLayoutData, price_array) => {
   let price_data = {
     status: true,
@@ -209,6 +267,19 @@ export const addReservationSeatWithoutSeatlayout = async (req, res) => {
       seat_type: seatsObj.seatType,
       no_of_seats: seatsObj.noOfSeats,
       seat_price: seatsObj.seatPrice,
+    });
+  }
+
+  let checkSeatExist = await checkSeatsAvailableWithoutSL({
+    event_sch_id,
+    seatLayoutData: selectedSeatsArray,
+  });
+
+  if (!checkSeatExist.status) {
+    return res.send({
+      status: false,
+      message: 'Seat Already Booked or Reserved',
+      checkSeatExist,
     });
   }
 
