@@ -61,8 +61,8 @@ const checkSeatsAvailableWithoutSL = async ({ event_sch_id, seatLayoutData }) =>
       };
       if (findIndexNew >= 0) {
         obj.available_seats =
-          parseFloat(obj.available_seats) -
-          parseFloat(checkBookedSeats[findIndexNew].total_seats);
+          parseInt(obj.available_seats) -
+          parseInt(checkBookedSeats[findIndexNew].total_seats);
       }
       createNewArray.push(createNewArray);
     });
