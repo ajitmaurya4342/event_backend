@@ -2,6 +2,9 @@ import { checkValidation } from '@/lib/checkValidation';
 import { dataReturnUpdate } from '@/lib/helper';
 import { pagination } from '@/lib/pagination';
 
+const NodeCache = require('node-cache');
+const eventCache = new NodeCache();
+
 var bcrypt = require('bcryptjs');
 
 export async function addEditCountries(req, res) {
@@ -689,7 +692,7 @@ export async function getSeatLayoutList(req, res) {
 
   if (SeatLayoutList && SeatLayoutList.data && sl_id) {
     SeatLayoutList.data.map(z => {
-      z['seat_layout_data'] = JSON.parse(z.seat_layout_data);
+      z['seat_layout_data'] = z.seat_layout_data;
     });
   }
 
